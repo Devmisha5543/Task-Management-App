@@ -1,7 +1,9 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-const { registerSchema } = require("../validations/authValidation");
-const { z } = require("zod");
+const {
+  registerSchema,
+  loginSchema
+} = require("../validations/authValidation");
 const jwt = require("jsonwebtoken");
 
 const register = async (req, res) => {
@@ -58,11 +60,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const loginSchema = z.object({
-      email: z.string().email("Please provide a valid email"),
-      password: z.string().min(1, "Password is required")
-    });
-
+   
     const validatedData = loginSchema.parse(req.body);
 
     const { email, password } = validatedData;
@@ -116,7 +114,36 @@ const login = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    res.status(200).json({
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error("Get current user error:", error);
+
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+};
+
+
 module.exports = {
   register,
-  login
+  login,
+  getMe
 };
