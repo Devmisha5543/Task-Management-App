@@ -1,5 +1,24 @@
 const mongoose = require("mongoose");
 
+const taskMemberSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+
+    role: {
+      type: String,
+      enum: ["owner", "editor", "viewer"],
+      default: "viewer"
+    }
+  },
+  {
+    _id: false
+  }
+);
+
 const taskSchema = new mongoose.Schema(
   {
     title: {
@@ -33,16 +52,24 @@ const taskSchema = new mongoose.Schema(
       type: [String]
     },
 
-    user: {
+    // The user who originally created the task
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true
+    },
+
+    // Users who can access the task
+    members: {
+      type: [taskMemberSchema],
+      default: []
     }
   },
   {
     timestamps: true
   }
 );
-taskSchema.index({ user: 1, status: 1 });
+
+taskSchema.index({ "members.user": 1, status: 1 });
 
 module.exports = mongoose.model("Task", taskSchema);
