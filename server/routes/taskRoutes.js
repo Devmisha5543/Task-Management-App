@@ -12,6 +12,14 @@ const {
 
 const protect = require("../middleware/authMiddleware");
 
+const upload = require("../middleware/uploadMiddleware");
+
+const {
+  uploadTaskAttachment,
+  getTaskAttachments,
+  deleteTaskAttachment
+} = require("../controllers/attachmentController");
+
 const router = express.Router();
 
 router.post("/", protect, createTask);
@@ -29,4 +37,22 @@ router.delete(
   removeTaskMember
 );
 
+router.post(
+  "/:id/attachments",
+  protect,
+  upload.single("file"),
+  uploadTaskAttachment
+);
+
+router.get(
+  "/:id/attachments",
+  protect,
+  getTaskAttachments
+);
+
+router.delete(
+  "/:id/attachments/:attachmentId",
+  protect,
+  deleteTaskAttachment
+);
 module.exports = router;

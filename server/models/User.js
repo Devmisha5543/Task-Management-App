@@ -20,6 +20,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 6
+    },
+
+    profilePhoto: {
+      type: String,
+      default: null
+    },
+    profilePhotoPublicId: {
+      type: String,
+      default: null
     }
   },
   {

@@ -5,6 +5,7 @@ const {
   loginSchema
 } = require("../validations/authValidation");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../config/cloudinary");
 
 const register = async (req, res) => {
   try {
@@ -129,7 +130,9 @@ const getMe = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        profilePhoto: user.profilePhoto,
         createdAt: user.createdAt
+        
       }
     });
   } catch (error) {
@@ -141,9 +144,77 @@ const getMe = async (req, res) => {
   }
 };
 
+const uploadProfilePhoto = async (req, res) => {
+  try {
+    // Make sure an image was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No image uploaded"
+      });
+    }
+
+    // Upload image to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "task-management/profile-photos",
+          resource_type: "image"
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
+      uploadStream.end(req.file.buffer);
+    });
+
+    // Find current user
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    // Save Cloudinary URL
+    const oldProfilePhotoPublicId = user.profilePhotoPublicId;
+
+    user.profilePhoto = result.secure_url;
+    user.profilePhotoPublicId = result.public_id;
+
+    await user.save();
+
+// Delete the old photo from Cloudinary
+    if (oldProfilePhotoPublicId) {
+      await cloudinary.uploader.destroy(
+        oldProfilePhotoPublicId,
+        {
+          resource_type: "image"
+        }
+     );
+   }
+    res.status(200).json({
+      message: "Profile photo uploaded successfully",
+      profilePhoto: user.profilePhoto
+    });
+  } catch (error) {
+    console.error("Upload profile photo error:", error);
+
+    res.status(500).json({
+      message: "Server error while uploading profile photo"
+    });
+  }
+};
+
 
 module.exports = {
   register,
   login,
-  getMe
+  getMe,
+  uploadProfilePhoto
 };
