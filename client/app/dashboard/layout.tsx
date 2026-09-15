@@ -1,11 +1,30 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import Link from "next/link";
+
+
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Button from "@/components/ui/Button";
+import { useAuthStore } from "@/store/authStore";
 
 export default function DashboardLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+
+  const router = useRouter();
+
+  const handleLogout = () => {
+  logout();
+  router.replace("/login?logout=success");
+};
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-gray-100 text-gray-900">
       <div className="flex min-h-screen">
         {/* Sidebar */}
@@ -48,15 +67,21 @@ export default function DashboardLayout({
               Dashboard
             </h2>
 
-            <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-gray-600 sm:block">
-                Welcome
-              </span>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm font-medium">
+                  {user?.username || "User"}
+                </p>
 
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200">
-                U
-              </div>
-            </div>
+                <p className="text-xs text-gray-500">
+                  {user?.email}
+                </p>
+             </div>
+
+              <Button onClick={handleLogout}>
+                Logout
+            </Button>
+          </div>
           </header>
 
           {/* Page content */}
@@ -66,5 +91,6 @@ export default function DashboardLayout({
         </div>
       </div>
     </div>
+  </ProtectedRoute>
   );
 }
