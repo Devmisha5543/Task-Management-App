@@ -12,7 +12,12 @@ export async function apiRequest(
 
   const headers = new Headers(options.headers);
 
-  headers.set("Content-Type", "application/json");
+  // Do not set Content-Type if sending FormData (browser sets boundary automatically)
+  if (!(options.body instanceof FormData)) {
+    if (!headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
+  }
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
@@ -20,7 +25,7 @@ export async function apiRequest(
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
-    headers
+    headers,
   });
 
   const data = await response.json();

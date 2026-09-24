@@ -2,17 +2,11 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  profilePhoto: string | null;
-  createdAt?: string;
+  profilePhoto?: string | null;
 }
 
-export interface LoginResponse {
+export interface AuthResponse {
   message: string;
   token: string;
-  user: User;
-}
-
-export interface RegisterResponse {
-  message: string;
   user: User;
 }

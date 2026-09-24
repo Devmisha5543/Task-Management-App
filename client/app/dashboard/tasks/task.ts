@@ -1,17 +1,11 @@
-export interface TaskMember {
-  user: string;
-  role: "owner" | "editor" | "viewer";
-}
-
 export interface Task {
   _id: string;
   title: string;
   description?: string;
   status: "todo" | "in-progress" | "done";
-  priority: "low" | "medium" | "high";
-  labels: string[];
-  createdBy: string;
-  members: TaskMember[];
+  priority?: "low" | "medium" | "high";
+  dueDate?: string;
+  user: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,5 +15,5 @@ export interface CreateTaskData {
   description?: string;
   status?: "todo" | "in-progress" | "done";
   priority?: "low" | "medium" | "high";
-  labels?: string[];
+  dueDate?: string;
 }

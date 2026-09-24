@@ -35,27 +35,27 @@ export default function DashboardLayout({
             </h1>
           </div>
 
-          <nav className="px-4">
-            <a
+          <nav className="px-4 space-y-1">
+            <Link
               href="/dashboard"
-              className="block rounded-lg px-4 py-3 hover:bg-gray-100"
+              className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black transition"
             >
               Dashboard
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/dashboard/tasks"
-              className="block rounded-lg px-4 py-3 hover:bg-gray-100"
+              className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black transition"
             >
               My Tasks
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/dashboard/shared"
-              className="block rounded-lg px-4 py-3 hover:bg-gray-100"
+              className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black transition"
             >
               Shared Tasks
-            </a>
+            </Link>
           </nav>
         </aside>
 
