@@ -11,6 +11,8 @@ interface AuthState {
   login: (token: string, user: User) => void;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
+  updateProfilePhoto: (photoUrl: string | null) => void;
+  updateUser: (updatedUser: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -68,5 +70,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       get().logout();
       set({ loading: false });
     }
+  },
+
+  updateProfilePhoto: (photoUrl: string | null) => {
+    const currentUser = get().user;
+    if (!currentUser) return;
+
+    const updatedUser = { ...currentUser, profilePhoto: photoUrl };
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+
+    set({ user: updatedUser });
+  },
+
+  updateUser: (updatedFields: Partial<User>) => {
+    const currentUser = get().user;
+    if (!currentUser) return;
+
+    const updatedUser = { ...currentUser, ...updatedFields };
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+
+    set({ user: updatedUser });
   },
 }));
