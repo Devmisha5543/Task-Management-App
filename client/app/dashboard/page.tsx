@@ -5,10 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/ui/Button";
 import CreateTaskModal from "@/components/tasks/CreateTaskModal";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
+import KanbanBoard from "@/components/tasks/KanbanBoard";
 import ShareTaskModal from "@/components/tasks/ShareTaskModal";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCard from "@/components/tasks/TaskCard";
 import TaskFilters from "@/components/tasks/TaskFilters";
+import TaskStats from "@/components/tasks/TaskStats";
 import { useTaskStore } from "@/store/taskStore";
 import type { Task } from "@/types/task";
 
@@ -26,13 +28,15 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    let result = tasks.filter((task) => {
       const matchesSearch =
         task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (task.description &&
@@ -46,7 +50,25 @@ export default function DashboardPage() {
 
       return matchesSearch && matchesStatus && matchesPriority;
     });
-  }, [tasks, searchQuery, statusFilter, priorityFilter]);
+
+    // Sorting Logic
+    result = [...result].sort((a, b) => {
+      if (sortBy === "oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+      if (sortBy === "priority-desc") {
+        const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
+        return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+      }
+      if (sortBy === "title-asc") {
+        return a.title.localeCompare(b.title);
+      }
+      // Default: newest
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    return result;
+  }, [tasks, searchQuery, statusFilter, priorityFilter, sortBy]);
 
   return (
     <div>
@@ -71,7 +93,10 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Filters and Search Bar */}
+      {/* Dashboard Stats Summary Bar */}
+      <TaskStats tasks={tasks} />
+
+      {/* Filters, Search Bar, Sort & View Mode Switcher */}
       <TaskFilters
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -79,9 +104,13 @@ export default function DashboardPage() {
         onStatusFilterChange={setStatusFilter}
         priorityFilter={priorityFilter}
         onPriorityFilterChange={setPriorityFilter}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
-      {/* Main Task List */}
+      {/* Main Task View (Grid vs Kanban) */}
       {loading ? (
         <div className="flex justify-center rounded-2xl border border-gray-200 bg-white p-12 text-gray-500 shadow-xs">
           <div className="flex items-center gap-3">
@@ -120,6 +149,13 @@ export default function DashboardPage() {
             Reset Filters
           </button>
         </div>
+      ) : viewMode === "kanban" ? (
+        <KanbanBoard
+          tasks={filteredTasks}
+          onEdit={(t) => setEditingTask(t)}
+          onShare={(t) => setSharingTask(t)}
+          onAttachments={(t) => setAttachmentTask(t)}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredTasks.map((task) => (

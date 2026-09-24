@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
+import KanbanBoard from "@/components/tasks/KanbanBoard";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCard from "@/components/tasks/TaskCard";
 import TaskFilters from "@/components/tasks/TaskFilters";
+import TaskStats from "@/components/tasks/TaskStats";
 import { useTaskStore } from "@/store/taskStore";
 import { useAuthStore } from "@/store/authStore";
 import type { Task } from "@/types/task";
@@ -22,26 +24,25 @@ export default function SharedTasksPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // Robust ID Extractor
   const currentUserId = useMemo(() => {
     if (!user) return "";
     return String(user.id || (user as unknown as { _id?: string })._id || "");
   }, [user]);
 
-  // Shared tasks: Tasks created by others OR tasks with multiple members
   const sharedTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    let result = tasks.filter((task) => {
       const creatorId =
         typeof task.createdBy === "object" && task.createdBy !== null
           ? String((task.createdBy as unknown as { _id?: string; id?: string })._id || (task.createdBy as unknown as { _id?: string; id?: string }).id || "")
           : String(task.createdBy || "");
 
-      // A task is shared if it was created by someone else OR if it has multiple members
       const isCreatedByOthers = currentUserId ? creatorId !== currentUserId : true;
       const hasMultipleMembers = Array.isArray(task.members) && task.members.length > 1;
 
@@ -61,7 +62,23 @@ export default function SharedTasksPage() {
 
       return matchesSearch && matchesStatus && matchesPriority;
     });
-  }, [tasks, currentUserId, searchQuery, statusFilter, priorityFilter]);
+
+    result = [...result].sort((a, b) => {
+      if (sortBy === "oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+      if (sortBy === "priority-desc") {
+        const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
+        return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+      }
+      if (sortBy === "title-asc") {
+        return a.title.localeCompare(b.title);
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    return result;
+  }, [tasks, currentUserId, searchQuery, statusFilter, priorityFilter, sortBy]);
 
   return (
     <div>
@@ -78,6 +95,8 @@ export default function SharedTasksPage() {
         </div>
       )}
 
+      <TaskStats tasks={sharedTasks} />
+
       <TaskFilters
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -85,6 +104,10 @@ export default function SharedTasksPage() {
         onStatusFilterChange={setStatusFilter}
         priorityFilter={priorityFilter}
         onPriorityFilterChange={setPriorityFilter}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
       {loading ? (
@@ -104,6 +127,12 @@ export default function SharedTasksPage() {
             When tasks have multiple collaborators or are shared with you, they will appear here.
           </p>
         </div>
+      ) : viewMode === "kanban" ? (
+        <KanbanBoard
+          tasks={sharedTasks}
+          onEdit={(t) => setEditingTask(t)}
+          onAttachments={(t) => setAttachmentTask(t)}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sharedTasks.map((task) => (

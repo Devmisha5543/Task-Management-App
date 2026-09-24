@@ -4,10 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/ui/Button";
 import CreateTaskModal from "@/components/tasks/CreateTaskModal";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
+import KanbanBoard from "@/components/tasks/KanbanBoard";
 import ShareTaskModal from "@/components/tasks/ShareTaskModal";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCard from "@/components/tasks/TaskCard";
 import TaskFilters from "@/components/tasks/TaskFilters";
+import TaskStats from "@/components/tasks/TaskStats";
 import { useTaskStore } from "@/store/taskStore";
 import { useAuthStore } from "@/store/authStore";
 import type { Task } from "@/types/task";
@@ -27,6 +29,8 @@ export default function MyTasksPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
 
   useEffect(() => {
     fetchTasks();
@@ -38,7 +42,7 @@ export default function MyTasksPage() {
   }, [user]);
 
   const personalTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    let result = tasks.filter((task) => {
       const creatorId =
         typeof task.createdBy === "object" && task.createdBy !== null
           ? String((task.createdBy as unknown as { _id?: string; id?: string })._id || (task.createdBy as unknown as { _id?: string; id?: string }).id || "")
@@ -60,7 +64,23 @@ export default function MyTasksPage() {
 
       return matchesSearch && matchesStatus && matchesPriority;
     });
-  }, [tasks, currentUserId, searchQuery, statusFilter, priorityFilter]);
+
+    result = [...result].sort((a, b) => {
+      if (sortBy === "oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+      if (sortBy === "priority-desc") {
+        const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
+        return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+      }
+      if (sortBy === "title-asc") {
+        return a.title.localeCompare(b.title);
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    return result;
+  }, [tasks, currentUserId, searchQuery, statusFilter, priorityFilter, sortBy]);
 
   return (
     <div>
@@ -83,6 +103,8 @@ export default function MyTasksPage() {
         </div>
       )}
 
+      <TaskStats tasks={personalTasks} />
+
       <TaskFilters
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -90,6 +112,10 @@ export default function MyTasksPage() {
         onStatusFilterChange={setStatusFilter}
         priorityFilter={priorityFilter}
         onPriorityFilterChange={setPriorityFilter}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
       {loading ? (
@@ -108,6 +134,13 @@ export default function MyTasksPage() {
             </Button>
           </div>
         </div>
+      ) : viewMode === "kanban" ? (
+        <KanbanBoard
+          tasks={personalTasks}
+          onEdit={(t) => setEditingTask(t)}
+          onShare={(t) => setSharingTask(t)}
+          onAttachments={(t) => setAttachmentTask(t)}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {personalTasks.map((task) => (
