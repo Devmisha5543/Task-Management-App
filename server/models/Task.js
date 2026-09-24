@@ -63,6 +63,11 @@ const taskSchema = new mongoose.Schema(
     members: {
       type: [taskMemberSchema],
       default: []
+    },
+
+    commentsCount: {
+      type: Number,
+      default: 0
     }
   },
   {

@@ -7,6 +7,8 @@ import { useTaskStore } from "@/store/taskStore";
 import { useAuthStore } from "@/store/authStore";
 import type { Task, TaskMember } from "@/types/task";
 
+import Icon from "@/components/ui/Icon";
+
 interface ShareTaskModalProps {
   task: Task | null;
   isOpen: boolean;
@@ -99,16 +101,19 @@ export default function ShareTaskModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between border-b pb-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Share Task</h2>
-            <p className="text-xs text-gray-500 truncate max-w-xs">{task.title}</p>
+          <div className="flex items-center gap-2">
+            <Icon name="users" className="w-5 h-5 text-gray-700" />
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Share Task</h2>
+              <p className="text-xs text-gray-500 truncate max-w-xs">{task.title}</p>
+            </div>
           </div>
           <button
             onClick={onClose}
             type="button"
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           >
-            ✕
+            <Icon name="close" className="w-5 h-5" />
           </button>
         </div>
 

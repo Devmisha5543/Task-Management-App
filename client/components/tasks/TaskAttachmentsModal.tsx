@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
 import {
   deleteTaskAttachment,
   getTaskAttachments,
@@ -92,19 +93,24 @@ export default function TaskAttachmentsModal({
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes || bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
-  const getFileIcon = (mimetype: string) => {
-    if (mimetype?.startsWith("image/")) return "🖼️";
-    if (mimetype?.includes("pdf")) return "📄";
-    if (mimetype?.includes("zip") || mimetype?.includes("rar")) return "📦";
-    return "📎";
+  const getViewerUrl = (rawUrl?: string, filename?: string) => {
+    if (!rawUrl) return "#";
+    const nameToTest = filename || rawUrl.split("?")[0];
+    const ext = nameToTest.split(".").pop()?.toLowerCase() || "";
+    const docExtensions = ["pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx"];
+
+    if (docExtensions.includes(ext)) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(rawUrl)}`;
+    }
+    return rawUrl;
   };
 
   return (
@@ -112,30 +118,33 @@ export default function TaskAttachmentsModal({
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b pb-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Task Attachments</h2>
-            <p className="text-xs text-gray-500 truncate max-w-xs">{task.title}</p>
+          <div className="flex items-center gap-2">
+            <Icon name="attachment" className="w-5 h-5 text-gray-700" />
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Task Attachments</h2>
+              <p className="text-xs text-gray-500 truncate max-w-xs">{task.title}</p>
+            </div>
           </div>
           <button
             onClick={onClose}
             type="button"
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           >
-            ✕
+            <Icon name="close" className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
             {error}
           </div>
         )}
 
         {/* File Upload Box */}
-        <div className="mt-4 rounded-xl border-2 border-dashed border-gray-300 p-4 text-center hover:border-black transition">
-          <label className="cursor-pointer flex flex-col items-center gap-1">
-            <span className="text-2xl">☁️</span>
-            <span className="text-sm font-medium text-gray-800">
+        <div className="mt-4 rounded-xl border-2 border-dashed border-gray-300 p-5 text-center hover:border-black transition">
+          <label className="cursor-pointer flex flex-col items-center gap-1.5">
+            <Icon name="cloud-upload" className="w-8 h-8 text-blue-600 mb-1" />
+            <span className="text-sm font-semibold text-gray-900">
               {uploading ? "Uploading to Cloudinary..." : "Click to select a file to upload"}
             </span>
             <span className="text-xs text-gray-500">Images, PDFs, documents up to 10MB</span>
@@ -165,8 +174,10 @@ export default function TaskAttachmentsModal({
           ) : (
             <div className="divide-y max-h-60 overflow-y-auto pr-1">
               {attachments.map((att) => {
+                const rawUrl = att.url || (att as unknown as { fileUrl?: string }).fileUrl;
+                const viewerUrl = getViewerUrl(rawUrl, att.filename);
                 const uploaderName =
-                  typeof att.uploadedBy === "object"
+                  typeof att.uploadedBy === "object" && att.uploadedBy !== null
                     ? att.uploadedBy.username || att.uploadedBy.email
                     : "User";
 
@@ -176,13 +187,15 @@ export default function TaskAttachmentsModal({
                     className="flex items-center justify-between py-3 gap-2"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-xl">{getFileIcon(att.mimetype)}</span>
+                      <div className="p-2 rounded-lg bg-blue-50 text-blue-600 flex-shrink-0">
+                        <Icon name="file" className="w-5 h-5" />
+                      </div>
                       <div className="min-w-0">
                         <a
-                          href={att.url}
+                          href={viewerUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block truncate text-sm font-medium text-gray-900 hover:underline"
+                          className="block truncate text-sm font-semibold text-gray-900 hover:text-blue-600 hover:underline"
                         >
                           {att.filename}
                         </a>
@@ -193,22 +206,28 @@ export default function TaskAttachmentsModal({
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <a
-                        href={att.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        Open
-                      </a>
+                      {viewerUrl && (
+                        <a
+                          href={viewerUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition"
+                        >
+                          Open Link
+                        </a>
+                      )}
 
                       <button
                         onClick={() => handleDelete(att._id)}
                         disabled={deletingId === att._id}
-                        className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition disabled:opacity-50"
                         title="Delete Attachment"
                       >
-                        {deletingId === att._id ? "..." : "🗑️"}
+                        {deletingId === att._id ? (
+                          <span className="text-xs">...</span>
+                        ) : (
+                          <Icon name="trash" className="w-4 h-4 text-red-500" />
+                        )}
                       </button>
                     </div>
                   </div>

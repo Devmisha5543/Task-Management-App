@@ -20,6 +20,12 @@ const {
   deleteTaskAttachment
 } = require("../controllers/attachmentController");
 
+const {
+  addComment,
+  getTaskComments,
+  deleteComment
+} = require("../controllers/commentController");
+
 const router = express.Router();
 
 router.post("/", protect, createTask);
@@ -55,4 +61,10 @@ router.delete(
   protect,
   deleteTaskAttachment
 );
+
+// Comment routes
+router.post("/:id/comments", protect, addComment);
+router.get("/:id/comments", protect, getTaskComments);
+router.delete("/:id/comments/:commentId", protect, deleteComment);
+
 module.exports = router;

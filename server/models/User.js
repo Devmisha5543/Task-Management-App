@@ -22,6 +22,16 @@ const userSchema = new mongoose.Schema(
       minlength: 6
     },
 
+    phoneNumber: {
+      type: String,
+      default: ""
+    },
+
+    showPhoneNumber: {
+      type: Boolean,
+      default: false
+    },
+
     profilePhoto: {
       type: String,
       default: null

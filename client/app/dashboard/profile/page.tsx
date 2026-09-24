@@ -6,6 +6,8 @@ import { deleteProfilePhoto, updateProfile, uploadProfilePhoto } from "@/lib/aut
 import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 
+import Icon from "@/components/ui/Icon";
+
 export default function ProfilePage() {
   const user = useAuthStore((state) => state.user);
   const updateProfilePhotoInStore = useAuthStore((state) => state.updateProfilePhoto);
@@ -173,8 +175,8 @@ export default function ProfilePage() {
                   <span>{getInitials(user?.username)}</span>
                 )}
                 {/* Hover overlay indicator */}
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-semibold text-white transition">
-                  🔍 View
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-semibold text-white transition gap-1">
+                  <Icon name="search" className="w-4 h-4" /> View
                 </div>
               </div>
 
@@ -189,7 +191,7 @@ export default function ProfilePage() {
             {/* Quick Upload Photo */}
             <div>
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50">
-                <span>📷</span>
+                <Icon name="camera" className="w-4 h-4 text-gray-600" />
                 <span>{uploading ? "Uploading..." : "Change Photo"}</span>
                 <input
                   type="file"
@@ -304,7 +306,8 @@ export default function ProfilePage() {
             {/* Actions inside Modal */}
             <div className="mt-6 flex flex-col gap-2">
               <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-black py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition">
-                <span>📷 Change Picture</span>
+                <Icon name="camera" className="w-4 h-4 text-white" />
+                <span>Change Picture</span>
                 <input
                   type="file"
                   accept="image/*"

@@ -4,11 +4,14 @@ import { useState } from "react";
 import { useTaskStore } from "@/store/taskStore";
 import type { Task } from "@/types/task";
 
+import Icon from "@/components/ui/Icon";
+
 interface TaskCardProps {
   task: Task;
   onEdit: (task: Task) => void;
   onShare?: (task: Task) => void;
   onAttachments?: (task: Task) => void;
+  onComments?: (task: Task) => void;
 }
 
 export default function TaskCard({
@@ -16,6 +19,7 @@ export default function TaskCard({
   onEdit,
   onShare,
   onAttachments,
+  onComments,
 }: TaskCardProps) {
   const updateTask = useTaskStore((state) => state.updateTask);
   const deleteTask = useTaskStore((state) => state.deleteTask);
@@ -99,40 +103,55 @@ export default function TaskCard({
           </div>
 
           <div className="flex items-center gap-1">
+            {onComments && (
+              <button
+                onClick={() => onComments(task)}
+                className="relative rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                title="Task Discussion / Comments"
+              >
+                <Icon name="comment" className="w-4 h-4" />
+                {task.commentsCount ? task.commentsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[9px] font-bold text-white">
+                    {task.commentsCount}
+                  </span>
+                ) : null}
+              </button>
+            )}
+
             {onAttachments && (
               <button
                 onClick={() => onAttachments(task)}
-                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
                 title="Attachments"
               >
-                📎
+                <Icon name="attachment" className="w-4 h-4" />
               </button>
             )}
 
             {onShare && (
               <button
                 onClick={() => onShare(task)}
-                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
                 title="Share Task / Manage Members"
               >
-                👥
+                <Icon name="share" className="w-4 h-4" />
               </button>
             )}
 
             <button
               onClick={() => onEdit(task)}
-              className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
               title="Edit Task"
             >
-              ✏️
+              <Icon name="edit" className="w-4 h-4" />
             </button>
 
             <button
               onClick={() => setShowConfirmDelete(true)}
-              className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+              className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
               title="Delete Task"
             >
-              🗑️
+              <Icon name="trash" className="w-4 h-4 text-red-500" />
             </button>
           </div>
         </div>
@@ -167,8 +186,9 @@ export default function TaskCard({
           )}
 
           {memberCount > 1 && (
-            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
-              👥 {memberCount} members
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+              <Icon name="users" className="w-3 h-3" />
+              {memberCount} members
             </span>
           )}
         </div>

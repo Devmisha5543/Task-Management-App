@@ -9,12 +9,9 @@ const cloudinary = require("../config/cloudinary");
 
 const register = async (req, res) => {
   try {
-    // Validate incoming data
     const validatedData = registerSchema.parse(req.body);
-
     const { username, email, password } = validatedData;
 
-    // Check if username or email already exists
     const existingUser = await User.findOne({
       $or: [{ username }, { email }]
     });
@@ -25,10 +22,8 @@ const register = async (req, res) => {
       });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create the user
     const user = await User.create({
       username,
       email,
@@ -40,7 +35,11 @@ const register = async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        phoneNumber: user.phoneNumber || "",
+        showPhoneNumber: user.showPhoneNumber || false,
+        profilePhoto: user.profilePhoto,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
@@ -61,12 +60,9 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-   
     const validatedData = loginSchema.parse(req.body);
-
     const { email, password } = validatedData;
 
-    // Find the user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -75,7 +71,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Compare the entered password with the stored hash
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
@@ -85,10 +80,10 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-  { userId: user._id },
-  process.env.JWT_SECRET,
-  { expiresIn: "7d" }
-  );
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(200).json({
       message: "Login successful",
@@ -96,7 +91,11 @@ const login = async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        phoneNumber: user.phoneNumber || "",
+        showPhoneNumber: user.showPhoneNumber || false,
+        profilePhoto: user.profilePhoto,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
@@ -130,9 +129,10 @@ const getMe = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        phoneNumber: user.phoneNumber || "",
+        showPhoneNumber: user.showPhoneNumber || false,
         profilePhoto: user.profilePhoto,
         createdAt: user.createdAt
-        
       }
     });
   } catch (error) {
@@ -144,16 +144,65 @@ const getMe = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const { username, email, phoneNumber } = req.body;
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check username uniqueness if changed
+    if (username && username !== user.username) {
+      const existingUsername = await User.findOne({ username });
+      if (existingUsername) {
+        return res.status(409).json({ message: "Username is already taken" });
+      }
+      user.username = username;
+    }
+
+    // Check email uniqueness if changed
+    if (email && email !== user.email) {
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(409).json({ message: "Email is already in use" });
+      }
+      user.email = email;
+    }
+
+    if (phoneNumber !== undefined) {
+      user.phoneNumber = phoneNumber;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber || "",
+        showPhoneNumber: user.showPhoneNumber || false,
+        profilePhoto: user.profilePhoto,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ message: "Server error while updating profile" });
+  }
+};
+
 const uploadProfilePhoto = async (req, res) => {
   try {
-    // Make sure an image was uploaded
     if (!req.file) {
       return res.status(400).json({
         message: "No image uploaded"
       });
     }
 
-    // Upload image to Cloudinary
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -172,7 +221,6 @@ const uploadProfilePhoto = async (req, res) => {
       uploadStream.end(req.file.buffer);
     });
 
-    // Find current user
     const user = await User.findById(req.userId);
 
     if (!user) {
@@ -181,7 +229,6 @@ const uploadProfilePhoto = async (req, res) => {
       });
     }
 
-    // Save Cloudinary URL
     const oldProfilePhotoPublicId = user.profilePhotoPublicId;
 
     user.profilePhoto = result.secure_url;
@@ -189,15 +236,12 @@ const uploadProfilePhoto = async (req, res) => {
 
     await user.save();
 
-// Delete the old photo from Cloudinary
     if (oldProfilePhotoPublicId) {
-      await cloudinary.uploader.destroy(
-        oldProfilePhotoPublicId,
-        {
-          resource_type: "image"
-        }
-     );
-   }
+      await cloudinary.uploader.destroy(oldProfilePhotoPublicId, {
+        resource_type: "image"
+      });
+    }
+
     res.status(200).json({
       message: "Profile photo uploaded successfully",
       profilePhoto: user.profilePhoto
@@ -211,10 +255,39 @@ const uploadProfilePhoto = async (req, res) => {
   }
 };
 
+const deleteProfilePhoto = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.profilePhotoPublicId) {
+      await cloudinary.uploader.destroy(user.profilePhotoPublicId, {
+        resource_type: "image"
+      });
+    }
+
+    user.profilePhoto = null;
+    user.profilePhotoPublicId = null;
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile photo removed successfully",
+      profilePhoto: null
+    });
+  } catch (error) {
+    console.error("Delete profile photo error:", error);
+    res.status(500).json({ message: "Server error while deleting profile photo" });
+  }
+};
 
 module.exports = {
   register,
   login,
   getMe,
-  uploadProfilePhoto
+  updateProfile,
+  uploadProfilePhoto,
+  deleteProfilePhoto
 };

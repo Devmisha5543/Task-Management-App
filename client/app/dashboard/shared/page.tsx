@@ -4,12 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
 import KanbanBoard from "@/components/tasks/KanbanBoard";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
+import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
 import TaskCard from "@/components/tasks/TaskCard";
 import TaskFilters from "@/components/tasks/TaskFilters";
 import TaskStats from "@/components/tasks/TaskStats";
 import { useTaskStore } from "@/store/taskStore";
 import { useAuthStore } from "@/store/authStore";
 import type { Task } from "@/types/task";
+
+import Icon from "@/components/ui/Icon";
 
 export default function SharedTasksPage() {
   const user = useAuthStore((state) => state.user);
@@ -20,6 +23,7 @@ export default function SharedTasksPage() {
 
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
+  const [commentingTask, setCommentingTask] = useState<Task | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -119,8 +123,8 @@ export default function SharedTasksPage() {
         </div>
       ) : sharedTasks.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-xl">
-            👥
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700">
+            <Icon name="users" className="w-6 h-6" />
           </div>
           <h2 className="mt-4 text-lg font-semibold text-gray-900">No shared tasks yet</h2>
           <p className="mt-1 text-sm text-gray-500">
@@ -132,6 +136,7 @@ export default function SharedTasksPage() {
           tasks={sharedTasks}
           onEdit={(t) => setEditingTask(t)}
           onAttachments={(t) => setAttachmentTask(t)}
+          onComments={(t) => setCommentingTask(t)}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -141,6 +146,7 @@ export default function SharedTasksPage() {
               task={task}
               onEdit={(t) => setEditingTask(t)}
               onAttachments={(t) => setAttachmentTask(t)}
+              onComments={(t) => setCommentingTask(t)}
             />
           ))}
         </div>
@@ -156,6 +162,13 @@ export default function SharedTasksPage() {
         task={attachmentTask}
         isOpen={!!attachmentTask}
         onClose={() => setAttachmentTask(null)}
+      />
+
+      <TaskCommentsModal
+        task={commentingTask}
+        isOpen={!!commentingTask}
+        onClose={() => setCommentingTask(null)}
+        onCommentChange={fetchTasks}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import EditTaskModal from "@/components/tasks/EditTaskModal";
 import KanbanBoard from "@/components/tasks/KanbanBoard";
 import ShareTaskModal from "@/components/tasks/ShareTaskModal";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
+import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
 import TaskCard from "@/components/tasks/TaskCard";
 import TaskFilters from "@/components/tasks/TaskFilters";
 import TaskStats from "@/components/tasks/TaskStats";
@@ -25,6 +26,7 @@ export default function MyTasksPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [sharingTask, setSharingTask] = useState<Task | null>(null);
   const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
+  const [commentingTask, setCommentingTask] = useState<Task | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -140,6 +142,7 @@ export default function MyTasksPage() {
           onEdit={(t) => setEditingTask(t)}
           onShare={(t) => setSharingTask(t)}
           onAttachments={(t) => setAttachmentTask(t)}
+          onComments={(t) => setCommentingTask(t)}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -150,6 +153,7 @@ export default function MyTasksPage() {
               onEdit={(t) => setEditingTask(t)}
               onShare={(t) => setSharingTask(t)}
               onAttachments={(t) => setAttachmentTask(t)}
+              onComments={(t) => setCommentingTask(t)}
             />
           ))}
         </div>
@@ -176,6 +180,13 @@ export default function MyTasksPage() {
         task={attachmentTask}
         isOpen={!!attachmentTask}
         onClose={() => setAttachmentTask(null)}
+      />
+
+      <TaskCommentsModal
+        task={commentingTask}
+        isOpen={!!commentingTask}
+        onClose={() => setCommentingTask(null)}
+        onCommentChange={fetchTasks}
       />
     </div>
   );

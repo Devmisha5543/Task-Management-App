@@ -9,6 +9,7 @@ interface KanbanBoardProps {
   onEdit: (task: Task) => void;
   onShare?: (task: Task) => void;
   onAttachments?: (task: Task) => void;
+  onComments?: (task: Task) => void;
 }
 
 export default function KanbanBoard({
@@ -16,6 +17,7 @@ export default function KanbanBoard({
   onEdit,
   onShare,
   onAttachments,
+  onComments,
 }: KanbanBoardProps) {
   const updateTask = useTaskStore((state) => state.updateTask);
 
@@ -91,6 +93,7 @@ export default function KanbanBoard({
                     onEdit={onEdit}
                     onShare={onShare}
                     onAttachments={onAttachments}
+                    onComments={onComments}
                   />
 
                   {/* Quick Kanban Move Bar on Card Hover */}

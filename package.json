@@ -1,5 +1,12 @@
 {
-  "dependencies": {
-    "zod": "^4.6.5"
+  "name": "task-management-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "mobile": "npm --prefix mobile start",
+    "mobile:android": "npm --prefix mobile run android",
+    "mobile:web": "npm --prefix mobile run web",
+    "server": "npm --prefix server run dev",
+    "client": "npm --prefix client run dev"
   }
 }
