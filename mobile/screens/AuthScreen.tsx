@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { mobileApiRequest, setAuthToken } from "../lib/api";
+import { mobileApiRequest, setAuthToken, API_URL } from "../lib/api";
 import type { User } from "../types/auth";
 
 interface AuthScreenProps {
@@ -59,7 +59,11 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
         await setAuthToken(data.token);
       }
 
-      onLoginSuccess(data.user);
+      if (data.user) {
+        onLoginSuccess(data.user);
+      } else {
+        setError("Invalid server response: User object is missing");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

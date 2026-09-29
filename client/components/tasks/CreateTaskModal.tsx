@@ -20,6 +20,7 @@ export default function CreateTaskModal({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [dueDate, setDueDate] = useState("");
   const [labelsInput, setLabelsInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export default function CreateTaskModal({
       description: description.trim() || undefined,
       status,
       priority,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       labels,
     };
 
@@ -56,6 +58,7 @@ export default function CreateTaskModal({
       setDescription("");
       setStatus("todo");
       setPriority("medium");
+      setDueDate("");
       setLabelsInput("");
       onClose();
     } catch (err: unknown) {
@@ -117,7 +120,7 @@ export default function CreateTaskModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Status
@@ -150,6 +153,18 @@ export default function CreateTaskModal({
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+              />
             </div>
           </div>
 

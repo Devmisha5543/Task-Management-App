@@ -26,6 +26,8 @@ const {
   deleteComment
 } = require("../controllers/commentController");
 
+const { getTaskActivities } = require("../controllers/activityController");
+
 const router = express.Router();
 
 router.post("/", protect, createTask);
@@ -66,5 +68,8 @@ router.delete(
 router.post("/:id/comments", protect, addComment);
 router.get("/:id/comments", protect, getTaskComments);
 router.delete("/:id/comments/:commentId", protect, deleteComment);
+
+// Activity Log route
+router.get("/:id/activity", protect, getTaskActivities);
 
 module.exports = router;

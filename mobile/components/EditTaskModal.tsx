@@ -31,6 +31,7 @@ export default function EditTaskModal({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [dueDate, setDueDate] = useState("");
   const [labels, setLabels] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +42,7 @@ export default function EditTaskModal({
       setDescription(task.description || "");
       setStatus(task.status);
       setPriority(task.priority);
+      setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "");
       setLabels(task.labels ? task.labels.join(", ") : "");
       setError(null);
     }
@@ -68,6 +70,7 @@ export default function EditTaskModal({
         description: description.trim() || undefined,
         status,
         priority,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         labels: labelArray,
       });
 
@@ -166,6 +169,54 @@ export default function EditTaskModal({
                 </TouchableOpacity>
               ))}
             </View>
+
+            <Text style={styles.label}>Due Date (YYYY-MM-DD)</Text>
+            <View style={styles.datePresetRow}>
+              <TouchableOpacity
+                style={styles.datePresetBtn}
+                onPress={() => {
+                  const d = new Date();
+                  setDueDate(d.toISOString().split("T")[0]);
+                }}
+              >
+                <Text style={styles.datePresetText}>Today</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.datePresetBtn}
+                onPress={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + 1);
+                  setDueDate(d.toISOString().split("T")[0]);
+                }}
+              >
+                <Text style={styles.datePresetText}>Tomorrow</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.datePresetBtn}
+                onPress={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + 7);
+                  setDueDate(d.toISOString().split("T")[0]);
+                }}
+              >
+                <Text style={styles.datePresetText}>Next Week</Text>
+              </TouchableOpacity>
+              {dueDate ? (
+                <TouchableOpacity
+                  style={[styles.datePresetBtn, { backgroundColor: "#FEE2E2" }]}
+                  onPress={() => setDueDate("")}
+                >
+                  <Text style={[styles.datePresetText, { color: "#DC2626" }]}>Clear</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+            <TextInput
+              style={styles.input}
+              value={dueDate}
+              onChangeText={setDueDate}
+              placeholder="e.g. 2026-10-15"
+              placeholderTextColor="#9CA3AF"
+            />
 
             <Text style={styles.label}>Labels (comma separated)</Text>
             <TextInput
@@ -285,6 +336,24 @@ const styles = StyleSheet.create({
   },
   optionTextActive: {
     color: "#FFFFFF",
+  },
+  datePresetRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 8,
+  },
+  datePresetBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  datePresetText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#374151",
   },
   footer: {
     flexDirection: "row",

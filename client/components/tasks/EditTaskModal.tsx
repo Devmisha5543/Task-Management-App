@@ -22,6 +22,7 @@ export default function EditTaskModal({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [dueDate, setDueDate] = useState("");
   const [labelsInput, setLabelsInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export default function EditTaskModal({
       setDescription(task.description || "");
       setStatus(task.status || "todo");
       setPriority(task.priority || "medium");
+      setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "");
       setLabelsInput(task.labels ? task.labels.join(", ") : "");
       setErrorMessage(null);
     }
@@ -59,6 +61,7 @@ export default function EditTaskModal({
       description: description.trim() || undefined,
       status,
       priority,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       labels,
     };
 
@@ -122,7 +125,7 @@ export default function EditTaskModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Status
@@ -155,6 +158,29 @@ export default function EditTaskModal({
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">
+                  Due Date
+                </label>
+                {dueDate && (
+                  <button
+                    type="button"
+                    onClick={() => setDueDate("")}
+                    className="text-xs text-red-500 hover:underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+              />
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import KanbanBoard from "@/components/tasks/KanbanBoard";
 import ShareTaskModal from "@/components/tasks/ShareTaskModal";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
+import TaskActivityModal from "@/components/tasks/TaskActivityModal";
 import TaskCard from "@/components/tasks/TaskCard";
 import TaskFilters from "@/components/tasks/TaskFilters";
 import TaskStats from "@/components/tasks/TaskStats";
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [sharingTask, setSharingTask] = useState<Task | null>(null);
   const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
   const [commentingTask, setCommentingTask] = useState<Task | null>(null);
+  const [activityTask, setActivityTask] = useState<Task | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -66,6 +68,18 @@ export default function DashboardPage() {
       }
       if (sortBy === "title-asc") {
         return a.title.localeCompare(b.title);
+      }
+      if (sortBy === "due-soon") {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (sortBy === "due-late") {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
       }
       // Default: newest
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -160,6 +174,7 @@ export default function DashboardPage() {
           onShare={(t) => setSharingTask(t)}
           onAttachments={(t) => setAttachmentTask(t)}
           onComments={(t) => setCommentingTask(t)}
+          onActivity={(t) => setActivityTask(t)}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -171,6 +186,7 @@ export default function DashboardPage() {
               onShare={(t) => setSharingTask(t)}
               onAttachments={(t) => setAttachmentTask(t)}
               onComments={(t) => setCommentingTask(t)}
+              onActivity={(t) => setActivityTask(t)}
             />
           ))}
         </div>
@@ -205,6 +221,12 @@ export default function DashboardPage() {
         isOpen={!!commentingTask}
         onClose={() => setCommentingTask(null)}
         onCommentChange={fetchTasks}
+      />
+
+      <TaskActivityModal
+        task={activityTask}
+        isOpen={!!activityTask}
+        onClose={() => setActivityTask(null)}
       />
     </div>
   );

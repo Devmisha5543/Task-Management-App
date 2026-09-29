@@ -50,6 +50,7 @@ export interface Task {
   description?: string;
   status: "todo" | "in-progress" | "done";
   priority: "low" | "medium" | "high";
+  dueDate?: string | null;
   labels: string[];
   createdBy:
     | string
@@ -69,5 +70,30 @@ export interface CreateTaskData {
   description?: string;
   status?: "todo" | "in-progress" | "done";
   priority?: "low" | "medium" | "high";
+  dueDate?: string | null;
   labels?: string[];
+}
+
+export interface ActivityLog {
+  _id: string;
+  task: string;
+  user: {
+    _id: string;
+    name?: string;
+    username?: string;
+    email: string;
+    avatar?: string;
+  };
+  action:
+    | "created"
+    | "updated_status"
+    | "updated_details"
+    | "added_member"
+    | "removed_member"
+    | "added_attachment"
+    | "deleted_attachment"
+    | "added_comment"
+    | "deleted_comment";
+  details?: Record<string, any>;
+  createdAt: string;
 }

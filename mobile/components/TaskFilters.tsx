@@ -62,6 +62,8 @@ export default function TaskFilters({
   const sortOptions: DropdownOption[] = [
     { id: "newest", label: "Newest First" },
     { id: "oldest", label: "Oldest First" },
+    { id: "due-soon", label: "Due Date: Soonest" },
+    { id: "due-late", label: "Due Date: Furthest" },
     { id: "priority-desc", label: "Highest Priority" },
     { id: "title-asc", label: "Title (A-Z)" },
   ];

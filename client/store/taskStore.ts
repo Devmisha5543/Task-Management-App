@@ -82,6 +82,22 @@ export const useTaskStore = create<TaskState>((set) => ({
   },
 
   updateTask: async (id, taskData) => {
+    const previousTasks = useTaskStore.getState().tasks;
+
+    // Optimistic UI update
+    set((state) => ({
+      tasks: state.tasks.map((task) =>
+        task._id === id
+          ? {
+              ...task,
+              ...taskData,
+              status: taskData.status ?? task.status,
+              priority: taskData.priority ?? task.priority,
+            }
+          : task
+      ),
+    }));
+
     try {
       const updatedTask = await updateTaskApi(id, taskData);
 
@@ -91,7 +107,9 @@ export const useTaskStore = create<TaskState>((set) => ({
         ),
       }));
     } catch (error) {
+      // Rollback on error
       set({
+        tasks: previousTasks,
         error:
           error instanceof Error
             ? error.message

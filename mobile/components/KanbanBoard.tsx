@@ -20,6 +20,7 @@ interface KanbanBoardProps {
   onShare: (task: Task) => void;
   onAttachments: (task: Task) => void;
   onComments: (task: Task) => void;
+  onActivity?: (task: Task) => void;
   onDelete: (id: string) => void;
 }
 
@@ -30,6 +31,7 @@ export default function KanbanBoard({
   onShare,
   onAttachments,
   onComments,
+  onActivity,
   onDelete,
 }: KanbanBoardProps) {
   const [activeTab, setActiveTab] = useState<"todo" | "in-progress" | "done">(
@@ -110,6 +112,7 @@ export default function KanbanBoard({
               onShare={onShare}
               onAttachments={onAttachments}
               onComments={onComments}
+              onActivity={onActivity}
               onDelete={onDelete}
             />
           ))

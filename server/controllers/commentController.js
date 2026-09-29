@@ -1,5 +1,6 @@
 const Task = require("../models/Task");
 const Comment = require("../models/Comment");
+const logActivity = require("../utils/activityLogger");
 
 // Add a comment to a task
 const addComment = async (req, res) => {
@@ -29,6 +30,13 @@ const addComment = async (req, res) => {
 
     // Increment commentsCount in Task
     await Task.findByIdAndUpdate(taskId, { $inc: { commentsCount: 1 } });
+
+    await logActivity({
+      taskId,
+      userId: req.userId,
+      action: "added_comment",
+      details: { textSnippet: text.trim().substring(0, 50) }
+    });
 
     // Populate user details for response
     await comment.populate("user", "username email profileImage");

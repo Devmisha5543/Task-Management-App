@@ -12,6 +12,7 @@ interface TaskCardProps {
   onShare?: (task: Task) => void;
   onAttachments?: (task: Task) => void;
   onComments?: (task: Task) => void;
+  onActivity?: (task: Task) => void;
 }
 
 export default function TaskCard({
@@ -20,6 +21,7 @@ export default function TaskCard({
   onShare,
   onAttachments,
   onComments,
+  onActivity,
 }: TaskCardProps) {
   const updateTask = useTaskStore((state) => state.updateTask);
   const deleteTask = useTaskStore((state) => state.deleteTask);
@@ -73,7 +75,57 @@ export default function TaskCard({
     }
   };
 
+  const getDueDateInfo = (dueDateStr?: string | null, status?: string) => {
+    if (!dueDateStr) return null;
+    const due = new Date(dueDateStr);
+    const now = new Date();
+    const dueMidnight = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.round((dueMidnight.getTime() - nowMidnight.getTime()) / (1000 * 60 * 60 * 24));
+
+    const isDone = status === "done";
+    const dateFormatted = due.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+    if (isDone) {
+      return {
+        text: `Due ${dateFormatted}`,
+        badgeClass: "bg-gray-100 text-gray-500 border-gray-200",
+      };
+    }
+
+    if (diffDays < 0) {
+      const daysOverdue = Math.abs(diffDays);
+      return {
+        text: `${daysOverdue}d overdue (${dateFormatted})`,
+        badgeClass: "bg-red-100 text-red-700 border-red-200 font-semibold",
+      };
+    }
+    if (diffDays === 0) {
+      return {
+        text: "Due Today",
+        badgeClass: "bg-amber-100 text-amber-800 border-amber-300 font-semibold",
+      };
+    }
+    if (diffDays === 1) {
+      return {
+        text: "Due Tomorrow",
+        badgeClass: "bg-amber-50 text-amber-700 border-amber-200 font-medium",
+      };
+    }
+    if (diffDays <= 3) {
+      return {
+        text: `Due in ${diffDays} days (${dateFormatted})`,
+        badgeClass: "bg-blue-50 text-blue-700 border-blue-200 font-medium",
+      };
+    }
+    return {
+      text: `Due ${dateFormatted}`,
+      badgeClass: "bg-gray-100 text-gray-600 border-gray-200",
+    };
+  };
+
   const memberCount = task.members ? task.members.length : 1;
+  const dueDateInfo = getDueDateInfo(task.dueDate, task.status);
 
   return (
     <div className="group relative flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-gray-300 hover:shadow-md">
@@ -100,6 +152,15 @@ export default function TaskCard({
             >
               {task.priority} Priority
             </span>
+
+            {dueDateInfo && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${dueDateInfo.badgeClass}`}
+              >
+                <Icon name="calendar" className="w-3 h-3" />
+                {dueDateInfo.text}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-1">
@@ -135,6 +196,16 @@ export default function TaskCard({
                 title="Share Task / Manage Members"
               >
                 <Icon name="share" className="w-4 h-4" />
+              </button>
+            )}
+
+            {onActivity && (
+              <button
+                onClick={() => onActivity(task)}
+                className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                title="Activity Log / History"
+              >
+                <Icon name="history" className="w-4 h-4" />
               </button>
             )}
 

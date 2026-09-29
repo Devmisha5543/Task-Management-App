@@ -23,6 +23,7 @@ export interface Task {
   description?: string;
   status: "todo" | "in-progress" | "done";
   priority: "low" | "medium" | "high";
+  dueDate?: string | null;
   labels: string[];
   createdBy: string;
   members: TaskMember[];
@@ -36,5 +37,6 @@ export interface CreateTaskData {
   description?: string;
   status?: "todo" | "in-progress" | "done";
   priority?: "low" | "medium" | "high";
+  dueDate?: string | null;
   labels?: string[];
 }

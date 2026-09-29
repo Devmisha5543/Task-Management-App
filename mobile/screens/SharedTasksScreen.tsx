@@ -22,6 +22,7 @@ import EditTaskModal from "../components/EditTaskModal";
 import ShareTaskModal from "../components/ShareTaskModal";
 import TaskAttachmentsModal from "../components/TaskAttachmentsModal";
 import TaskCommentsModal from "../components/TaskCommentsModal";
+import TaskActivityModal from "../components/TaskActivityModal";
 
 interface SharedTasksScreenProps {
   user: User;
@@ -49,6 +50,7 @@ export default function SharedTasksScreen({
   const [sharingTask, setSharingTask] = useState<Task | null>(null);
   const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
   const [commentingTask, setCommentingTask] = useState<Task | null>(null);
+  const [activityTask, setActivityTask] = useState<Task | null>(null);
 
   const fetchMobileTasks = async () => {
     try {
@@ -116,6 +118,18 @@ export default function SharedTasksScreen({
       }
       if (sortBy === "title-asc") {
         return a.title.localeCompare(b.title);
+      }
+      if (sortBy === "due-soon") {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (sortBy === "due-late") {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
@@ -220,6 +234,7 @@ export default function SharedTasksScreen({
               onShare={(t) => setSharingTask(t)}
               onAttachments={(t) => setAttachmentTask(t)}
               onComments={(t) => setCommentingTask(t)}
+              onActivity={(t) => setActivityTask(t)}
               onDelete={handleDeleteTask}
             />
           ) : (
@@ -234,6 +249,7 @@ export default function SharedTasksScreen({
                   onShare={(t) => setSharingTask(t)}
                   onAttachments={(t) => setAttachmentTask(t)}
                   onComments={(t) => setCommentingTask(t)}
+                  onActivity={(t) => setActivityTask(t)}
                   onDelete={handleDeleteTask}
                 />
               )}
@@ -285,6 +301,12 @@ export default function SharedTasksScreen({
         visible={!!commentingTask}
         onClose={() => setCommentingTask(null)}
         onCommentChange={fetchMobileTasks}
+      />
+
+      <TaskActivityModal
+        task={activityTask}
+        visible={!!activityTask}
+        onClose={() => setActivityTask(null)}
       />
     </SafeAreaView>
   );

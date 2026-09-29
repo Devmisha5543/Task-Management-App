@@ -1,5 +1,5 @@
 import { mobileApiRequest } from "./api";
-import type { CreateTaskData, Task, TaskAttachment, TaskComment, TaskMember } from "../types/task";
+import type { CreateTaskData, Task, TaskAttachment, TaskComment, TaskMember, ActivityLog } from "../types/task";
 
 export async function getTasks(): Promise<Task[]> {
   const data = await mobileApiRequest("/tasks");
@@ -111,3 +111,10 @@ export async function deleteComment(
     method: "DELETE",
   });
 }
+
+// Task Activity Log API
+export async function getTaskActivities(taskId: string): Promise<ActivityLog[]> {
+  const data = await mobileApiRequest(`/tasks/${taskId}/activity`);
+  return data;
+}
+

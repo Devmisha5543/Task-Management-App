@@ -12,12 +12,19 @@ export default function TaskStats({ tasks }: TaskStatsProps) {
   const inProgress = tasks.filter((t) => t.status === "in-progress").length;
   const done = tasks.filter((t) => t.status === "done").length;
 
+  const nowMidnight = new Date();
+  nowMidnight.setHours(0, 0, 0, 0);
+  const overdue = tasks.filter((t) => {
+    if (!t.dueDate || t.status === "done") return false;
+    return new Date(t.dueDate).getTime() < nowMidnight.getTime();
+  }).length;
+
   const percent = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
     <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-xs">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 flex-1">
+        <div className={`grid grid-cols-2 gap-4 ${overdue > 0 ? "sm:grid-cols-5" : "sm:grid-cols-4"} flex-1`}>
           <div className="rounded-xl bg-gray-50 p-3.5 border border-gray-100">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Tasks</p>
             <p className="mt-1 text-2xl font-bold text-gray-900">{total}</p>
@@ -37,6 +44,13 @@ export default function TaskStats({ tasks }: TaskStatsProps) {
             <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Done</p>
             <p className="mt-1 text-2xl font-bold text-emerald-800">{done}</p>
           </div>
+
+          {overdue > 0 && (
+            <div className="rounded-xl bg-rose-50 p-3.5 border border-rose-200">
+              <p className="text-xs font-semibold text-rose-600 uppercase tracking-wider">Overdue</p>
+              <p className="mt-1 text-2xl font-bold text-rose-700">{overdue}</p>
+            </div>
+          )}
         </div>
 
         {/* Completion Progress Bar */}

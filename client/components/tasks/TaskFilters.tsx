@@ -80,6 +80,8 @@ export default function TaskFilters({
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
+          <option value="due-soon">Due Date: Soonest</option>
+          <option value="due-late">Due Date: Furthest</option>
           <option value="priority-desc">Priority: High to Low</option>
           <option value="title-asc">Title: A-Z</option>
         </select>

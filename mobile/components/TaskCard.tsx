@@ -13,6 +13,7 @@ interface TaskCardProps {
   onShare: (task: Task) => void;
   onAttachments: (task: Task) => void;
   onComments: (task: Task) => void;
+  onActivity?: (task: Task) => void;
   onDelete: (id: string) => void;
 }
 
@@ -23,6 +24,7 @@ export default function TaskCard({
   onShare,
   onAttachments,
   onComments,
+  onActivity,
   onDelete,
 }: TaskCardProps) {
   const getPriorityStyle = (priority: string) => {
@@ -36,9 +38,62 @@ export default function TaskCard({
     }
   };
 
+  const getDueDateInfo = (dueDateStr?: string | null, status?: string) => {
+    if (!dueDateStr) return null;
+    const due = new Date(dueDateStr);
+    const now = new Date();
+    const dueMidnight = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.round((dueMidnight.getTime() - nowMidnight.getTime()) / (1000 * 60 * 60 * 24));
+
+    const isDone = status === "done";
+    const dateFormatted = due.toLocaleDateString([], { month: "short", day: "numeric" });
+
+    if (isDone) {
+      return {
+        text: `Due ${dateFormatted}`,
+        bg: "#F3F4F6",
+        color: "#9CA3AF",
+        border: "#E5E7EB",
+      };
+    }
+
+    if (diffDays < 0) {
+      return {
+        text: `${Math.abs(diffDays)}d overdue (${dateFormatted})`,
+        bg: "#FEE2E2",
+        color: "#DC2626",
+        border: "#FCA5A5",
+      };
+    }
+    if (diffDays === 0) {
+      return {
+        text: "Due Today",
+        bg: "#FEF3C7",
+        color: "#D97706",
+        border: "#FCD34D",
+      };
+    }
+    if (diffDays === 1) {
+      return {
+        text: "Due Tomorrow",
+        bg: "#FEF3C7",
+        color: "#D97706",
+        border: "#FCD34D",
+      };
+    }
+    return {
+      text: `Due ${dateFormatted}`,
+      bg: "#F3F4F6",
+      color: "#4B5563",
+      border: "#E5E7EB",
+    };
+  };
+
   const priorityStyle = getPriorityStyle(task.priority);
   const memberCount = task.members ? task.members.length : 1;
   const commentsCount = task.commentsCount || 0;
+  const dueDateInfo = getDueDateInfo(task.dueDate, task.status);
 
   return (
     <View style={styles.card}>
@@ -79,8 +134,25 @@ export default function TaskCard({
         </View>
       ) : null}
 
-      {/* Member, Comments & Attachment Stats Bar */}
+      {/* Member, Comments, Due Date & Attachment Stats Bar */}
       <View style={styles.metaRow}>
+        {dueDateInfo && (
+          <View
+            style={[
+              styles.metaBadge,
+              {
+                backgroundColor: dueDateInfo.bg,
+                borderColor: dueDateInfo.border,
+              },
+            ]}
+          >
+            <Icon name="calendar-outline" size={13} color={dueDateInfo.color} />
+            <Text style={[styles.metaBadgeText, { color: dueDateInfo.color }]}>
+              {dueDateInfo.text}
+            </Text>
+          </View>
+        )}
+
         <TouchableOpacity
           style={styles.metaBadge}
           onPress={() => onShare(task)}
@@ -159,6 +231,16 @@ export default function TaskCard({
             <Icon name="person-add-outline" size={13} color="#374151" />
             <Text style={styles.actionBtnText}>Share</Text>
           </TouchableOpacity>
+
+          {onActivity ? (
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => onActivity(task)}
+            >
+              <Icon name="time-outline" size={13} color="#374151" />
+              <Text style={styles.actionBtnText}>History</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <TouchableOpacity

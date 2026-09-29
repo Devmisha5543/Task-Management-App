@@ -1,6 +1,7 @@
 const Attachment = require("../models/Attachment");
 const Task = require("../models/Task");
 const cloudinary = require("../config/cloudinary");
+const logActivity = require("../utils/activityLogger");
 
 const uploadTaskAttachment = async (req, res) => {
   try {
@@ -57,6 +58,13 @@ const uploadTaskAttachment = async (req, res) => {
       size: req.file.size,
       uploadedBy: req.userId,
       task: task._id
+    });
+
+    await logActivity({
+      taskId: task._id,
+      userId: req.userId,
+      action: "added_attachment",
+      details: { filename: req.file.originalname, size: req.file.size }
     });
 
     // 5. Return the attachment

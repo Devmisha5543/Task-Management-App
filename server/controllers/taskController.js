@@ -1,22 +1,33 @@
 const Task = require("../models/Task");
 const User = require("../models/User");
+const logActivity = require("../utils/activityLogger");
 
 const { createTaskSchema } = require("../validations/taskValidation");
 const { addTaskMemberSchema } = require("../validations/taskMemberValidation");
 const createTask = async (req, res) => {
   try {
     const validatedData = createTaskSchema.parse(req.body);
+    if (validatedData.dueDate === "") {
+      validatedData.dueDate = null;
+    }
 
     const task = await Task.create({
-  ...validatedData,
-  createdBy: req.userId,
-  members: [
-    {
-      user: req.userId,
-      role: "owner"
-    }
-  ]
-});
+      ...validatedData,
+      createdBy: req.userId,
+      members: [
+        {
+          user: req.userId,
+          role: "owner"
+        }
+      ]
+    });
+
+    await logActivity({
+      taskId: task._id,
+      userId: req.userId,
+      action: "created",
+      details: { title: task.title, status: task.status }
+    });
 
     res.status(201).json({
       message: "Task created successfully",
@@ -59,17 +70,30 @@ const getTasks = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const validatedData = createTaskSchema.parse(req.body);
-
-    const task = await Task.findOneAndUpdate(
-  {
-    _id: req.params.id,
-    members: {
-      $elemMatch: {
-        user: req.userId,
-        role: { $in: ["owner", "editor"] }
-      }
+    if (validatedData.dueDate === "") {
+      validatedData.dueDate = null;
     }
-  },
+
+    const existingTask = await Task.findOne({
+      _id: req.params.id,
+      members: {
+        $elemMatch: {
+          user: req.userId,
+          role: { $in: ["owner", "editor"] }
+        }
+      }
+    });
+
+    if (!existingTask) {
+      return res.status(404).json({
+        message: "Task not found"
+      });
+    }
+
+    const oldStatus = existingTask.status;
+
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
       validatedData,
       {
         new: true,
@@ -77,9 +101,19 @@ const updateTask = async (req, res) => {
       }
     );
 
-    if (!task) {
-      return res.status(404).json({
-        message: "Task not found"
+    if (validatedData.status && validatedData.status !== oldStatus) {
+      await logActivity({
+        taskId: task._id,
+        userId: req.userId,
+        action: "updated_status",
+        details: { oldStatus, newStatus: validatedData.status }
+      });
+    } else {
+      await logActivity({
+        taskId: task._id,
+        userId: req.userId,
+        action: "updated_details",
+        details: { updatedFields: Object.keys(validatedData) }
       });
     }
 
@@ -180,6 +214,13 @@ const addTaskMember = async (req, res) => {
 
     await task.save();
 
+    await logActivity({
+      taskId: task._id,
+      userId: req.userId,
+      action: "added_member",
+      details: { addedUserEmail: email, role }
+    });
+
     res.status(200).json({
       message: "User added to task successfully",
       task
@@ -255,9 +296,17 @@ const removeTaskMember = async (req, res) => {
       });
     }
 
+    const removedUserId = task.members[memberIndex].user;
     task.members.splice(memberIndex, 1);
 
     await task.save();
+
+    await logActivity({
+      taskId: task._id,
+      userId: req.userId,
+      action: "removed_member",
+      details: { removedUserId }
+    });
 
     res.status(200).json({
       message: "User removed from task successfully"

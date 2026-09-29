@@ -21,7 +21,9 @@ const createTaskSchema = z.object({
 
   dueDate: z
     .string()
-    .optional(),
+    .nullable()
+    .optional()
+    .or(z.literal("")),
 
   labels: z
     .array(z.string())

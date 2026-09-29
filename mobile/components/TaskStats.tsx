@@ -13,8 +13,18 @@ export default function TaskStats({ tasks }: TaskStatsProps) {
   const done = tasks.filter((t) => t.status === "done").length;
   const highPriority = tasks.filter((t) => t.priority === "high").length;
 
+  const nowMidnight = new Date();
+  nowMidnight.setHours(0, 0, 0, 0);
+  const overdue = tasks.filter((t) => {
+    if (!t.dueDate || t.status === "done") return false;
+    return new Date(t.dueDate).getTime() < nowMidnight.getTime();
+  }).length;
+
   const stats = [
     { label: "Total Tasks", count: total, color: "#3B82F6", bg: "#EFF6FF" },
+    ...(overdue > 0
+      ? [{ label: "Overdue", count: overdue, color: "#DC2626", bg: "#FEE2E2" }]
+      : []),
     { label: "To Do", count: todo, color: "#6B7280", bg: "#F3F4F6" },
     { label: "In Progress", count: inProgress, color: "#F59E0B", bg: "#FEF3C7" },
     { label: "Completed", count: done, color: "#10B981", bg: "#D1FAE5" },
