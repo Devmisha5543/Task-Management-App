@@ -17,6 +17,13 @@ export interface TaskComment {
   updatedAt: string;
 }
 
+export interface Subtask {
+  _id?: string;
+  title: string;
+  completed: boolean;
+  completedAt?: string | null;
+}
+
 export interface Task {
   _id: string;
   title: string;
@@ -25,6 +32,7 @@ export interface Task {
   priority: "low" | "medium" | "high";
   dueDate?: string | null;
   labels: string[];
+  subtasks?: Subtask[];
   createdBy: string;
   members: TaskMember[];
   commentsCount?: number;
@@ -39,4 +47,5 @@ export interface CreateTaskData {
   priority?: "low" | "medium" | "high";
   dueDate?: string | null;
   labels?: string[];
+  subtasks?: Subtask[];
 }

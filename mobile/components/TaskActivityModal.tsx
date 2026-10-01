@@ -77,6 +77,14 @@ export default function TaskActivityModal({
         return { label: "Commented", bg: "#CCFBF1", text: "#115E59" };
       case "deleted_comment":
         return { label: "Comment Removed", bg: "#FEE2E2", text: "#991B1B" };
+      case "added_subtask":
+        return { label: "Subtask Added", bg: "#E0F2FE", text: "#0369A1" };
+      case "completed_subtask":
+        return { label: "Subtask Done", bg: "#D1FAE5", text: "#065F46" };
+      case "uncompleted_subtask":
+        return { label: "Subtask Reopened", bg: "#FEF3C7", text: "#92400E" };
+      case "deleted_subtask":
+        return { label: "Subtask Removed", bg: "#FEE2E2", text: "#991B1B" };
       default:
         return { label: action, bg: "#F3F4F6", text: "#374151" };
     }
@@ -116,6 +124,34 @@ export default function TaskActivityModal({
       return (
         <Text style={styles.detailItalic}>
           &quot;{String(details.textSnippet)}...&quot;
+        </Text>
+      );
+    }
+    if (activity.action === "added_subtask" && details.title) {
+      return (
+        <Text style={styles.detailText}>
+          Added subtask <Text style={styles.detailBold}>&quot;{String(details.title)}&quot;</Text>
+        </Text>
+      );
+    }
+    if (activity.action === "completed_subtask" && details.title) {
+      return (
+        <Text style={[styles.detailText, { color: "#065F46" }]}>
+          Completed subtask <Text style={styles.detailBold}>&quot;{String(details.title)}&quot;</Text>
+        </Text>
+      );
+    }
+    if (activity.action === "uncompleted_subtask" && details.title) {
+      return (
+        <Text style={styles.detailText}>
+          Reopened subtask <Text style={styles.detailBold}>&quot;{String(details.title)}&quot;</Text>
+        </Text>
+      );
+    }
+    if (activity.action === "deleted_subtask" && details.title) {
+      return (
+        <Text style={styles.detailText}>
+          Removed subtask <Text style={styles.detailBold}>&quot;{String(details.title)}&quot;</Text>
         </Text>
       );
     }

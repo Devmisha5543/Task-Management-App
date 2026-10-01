@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
 import { useTaskStore } from "@/store/taskStore";
 import type { CreateTaskData } from "@/types/task";
 
@@ -22,8 +23,21 @@ export default function CreateTaskModal({
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
   const [labelsInput, setLabelsInput] = useState("");
+  const [subtasks, setSubtasks] = useState<{ title: string; completed: boolean }[]>([]);
+  const [subtaskInput, setSubtaskInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleAddSubtask = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
+    if (!subtaskInput.trim()) return;
+    setSubtasks([...subtasks, { title: subtaskInput.trim(), completed: false }]);
+    setSubtaskInput("");
+  };
+
+  const handleRemoveSubtask = (index: number) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
 
   if (!isOpen) return null;
 
@@ -49,6 +63,7 @@ export default function CreateTaskModal({
       priority,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       labels,
+      subtasks: subtasks.length > 0 ? subtasks : undefined,
     };
 
     try {
@@ -60,6 +75,8 @@ export default function CreateTaskModal({
       setPriority("medium");
       setDueDate("");
       setLabelsInput("");
+      setSubtasks([]);
+      setSubtaskInput("");
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -179,6 +196,64 @@ export default function CreateTaskModal({
               placeholder="frontend, bug, feature"
               className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
             />
+          </div>
+
+          {/* Subtasks / Checklist Builder */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Checklist / Subtasks{" "}
+              {subtasks.length > 0 && (
+                <span className="text-xs font-normal text-gray-500">
+                  ({subtasks.length} item{subtasks.length !== 1 ? "s" : ""})
+                </span>
+              )}
+            </label>
+            <div className="mt-1 flex gap-2">
+              <input
+                type="text"
+                value={subtaskInput}
+                onChange={(e) => setSubtaskInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddSubtask();
+                  }
+                }}
+                placeholder="Add checklist item & press Enter..."
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAddSubtask}
+                className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition"
+              >
+                + Add
+              </button>
+            </div>
+
+            {subtasks.length > 0 && (
+              <div className="mt-2 space-y-1.5 max-h-32 overflow-y-auto rounded-lg border border-gray-100 bg-gray-50/70 p-2">
+                {subtasks.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between text-xs rounded bg-white px-2.5 py-1.5 shadow-2xs border border-gray-100"
+                  >
+                    <span className="flex items-center gap-2 text-gray-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                      {item.title}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSubtask(index)}
+                      className="text-gray-400 hover:text-red-500 transition"
+                      title="Remove subtask"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 border-t pt-4">

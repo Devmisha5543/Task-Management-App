@@ -65,6 +65,14 @@ export default function TaskActivityModal({
         return { text: "File Uploaded", color: "bg-indigo-100 text-indigo-800 border-indigo-200" };
       case "added_comment":
         return { text: "Commented", color: "bg-teal-100 text-teal-800 border-teal-200" };
+      case "added_subtask":
+        return { text: "Subtask Added", color: "bg-sky-100 text-sky-800 border-sky-200" };
+      case "completed_subtask":
+        return { text: "Subtask Completed", color: "bg-emerald-100 text-emerald-800 border-emerald-200" };
+      case "uncompleted_subtask":
+        return { text: "Subtask Reopened", color: "bg-yellow-100 text-yellow-800 border-yellow-200" };
+      case "deleted_subtask":
+        return { text: "Subtask Removed", color: "bg-rose-100 text-rose-800 border-rose-200" };
       default:
         return { text: action, color: "bg-gray-100 text-gray-700 border-gray-200" };
     }
@@ -98,6 +106,34 @@ export default function TaskActivityModal({
       return (
         <span className="text-xs text-gray-600 italic">
           &quot;{String(details.textSnippet)}...&quot;
+        </span>
+      );
+    }
+    if (activity.action === "added_subtask" && details.title) {
+      return (
+        <span className="text-xs text-gray-600">
+          Added subtask: <strong>&quot;{String(details.title)}&quot;</strong>
+        </span>
+      );
+    }
+    if (activity.action === "completed_subtask" && details.title) {
+      return (
+        <span className="text-xs text-emerald-700 font-medium">
+          Completed subtask: <strong>&quot;{String(details.title)}&quot;</strong>
+        </span>
+      );
+    }
+    if (activity.action === "uncompleted_subtask" && details.title) {
+      return (
+        <span className="text-xs text-gray-600">
+          Reopened subtask: <strong>&quot;{String(details.title)}&quot;</strong>
+        </span>
+      );
+    }
+    if (activity.action === "deleted_subtask" && details.title) {
+      return (
+        <span className="text-xs text-gray-600">
+          Removed subtask: <strong>&quot;{String(details.title)}&quot;</strong>
         </span>
       );
     }

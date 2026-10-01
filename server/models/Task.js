@@ -19,6 +19,27 @@ const taskMemberSchema = new mongoose.Schema(
   }
 );
 
+const subtaskSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 300
+    },
+    completed: {
+      type: Boolean,
+      default: false
+    },
+    completedAt: {
+      type: Date
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
 const taskSchema = new mongoose.Schema(
   {
     title: {
@@ -68,6 +89,11 @@ const taskSchema = new mongoose.Schema(
     commentsCount: {
       type: Number,
       default: 0
+    },
+
+    subtasks: {
+      type: [subtaskSchema],
+      default: []
     }
   },
   {

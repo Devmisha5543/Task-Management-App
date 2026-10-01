@@ -2,7 +2,11 @@ const Task = require("../models/Task");
 const User = require("../models/User");
 const logActivity = require("../utils/activityLogger");
 
-const { createTaskSchema } = require("../validations/taskValidation");
+const {
+  createTaskSchema,
+  subtaskInputSchema,
+  updateSubtaskSchema
+} = require("../validations/taskValidation");
 const { addTaskMemberSchema } = require("../validations/taskMemberValidation");
 const createTask = async (req, res) => {
   try {
@@ -320,6 +324,178 @@ const removeTaskMember = async (req, res) => {
   }
 };
 
+const addSubtask = async (req, res) => {
+  try {
+    const { title } = subtaskInputSchema.parse(req.body);
+
+    const task = await Task.findOne({
+      _id: req.params.id,
+      members: {
+        $elemMatch: {
+          user: req.userId,
+          role: { $in: ["owner", "editor"] }
+        }
+      }
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found or insufficient permissions"
+      });
+    }
+
+    const newSubtask = {
+      title: title.trim(),
+      completed: false
+    };
+
+    task.subtasks.push(newSubtask);
+    await task.save();
+
+    const createdSubtask = task.subtasks[task.subtasks.length - 1];
+
+    await logActivity({
+      taskId: task._id,
+      userId: req.userId,
+      action: "added_subtask",
+      details: { title: createdSubtask.title }
+    });
+
+    res.status(201).json({
+      message: "Subtask added successfully",
+      task,
+      subtask: createdSubtask
+    });
+  } catch (error) {
+    console.error("Add subtask error:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({
+        message: "Invalid subtask data",
+        errors: error.issues
+      });
+    }
+    res.status(500).json({
+      message: "Server error while adding subtask"
+    });
+  }
+};
+
+const updateSubtask = async (req, res) => {
+  try {
+    const validatedData = updateSubtaskSchema.parse(req.body);
+
+    const task = await Task.findOne({
+      _id: req.params.id,
+      members: {
+        $elemMatch: {
+          user: req.userId,
+          role: { $in: ["owner", "editor"] }
+        }
+      }
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found or insufficient permissions"
+      });
+    }
+
+    const subtask = task.subtasks.id(req.params.subtaskId);
+    if (!subtask) {
+      return res.status(404).json({
+        message: "Subtask not found"
+      });
+    }
+
+    let actionToLog = null;
+    if (typeof validatedData.completed === "boolean" && validatedData.completed !== subtask.completed) {
+      subtask.completed = validatedData.completed;
+      subtask.completedAt = validatedData.completed ? new Date() : null;
+      actionToLog = validatedData.completed ? "completed_subtask" : "uncompleted_subtask";
+    }
+
+    if (validatedData.title) {
+      subtask.title = validatedData.title.trim();
+    }
+
+    await task.save();
+
+    if (actionToLog) {
+      await logActivity({
+        taskId: task._id,
+        userId: req.userId,
+        action: actionToLog,
+        details: { title: subtask.title }
+      });
+    }
+
+    res.status(200).json({
+      message: "Subtask updated successfully",
+      task,
+      subtask
+    });
+  } catch (error) {
+    console.error("Update subtask error:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({
+        message: "Invalid subtask data",
+        errors: error.issues
+      });
+    }
+    res.status(500).json({
+      message: "Server error while updating subtask"
+    });
+  }
+};
+
+const deleteSubtask = async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      members: {
+        $elemMatch: {
+          user: req.userId,
+          role: { $in: ["owner", "editor"] }
+        }
+      }
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found or insufficient permissions"
+      });
+    }
+
+    const subtask = task.subtasks.id(req.params.subtaskId);
+    if (!subtask) {
+      return res.status(404).json({
+        message: "Subtask not found"
+      });
+    }
+
+    const subtaskTitle = subtask.title;
+    task.subtasks.pull(req.params.subtaskId);
+    await task.save();
+
+    await logActivity({
+      taskId: task._id,
+      userId: req.userId,
+      action: "deleted_subtask",
+      details: { title: subtaskTitle }
+    });
+
+    res.status(200).json({
+      message: "Subtask deleted successfully",
+      task
+    });
+  } catch (error) {
+    console.error("Delete subtask error:", error);
+    res.status(500).json({
+      message: "Server error while deleting subtask"
+    });
+  }
+};
+
 module.exports = {
   createTask,
   getTasks,
@@ -327,5 +503,8 @@ module.exports = {
   deleteTask,
   addTaskMember,
   getTaskMembers,
-  removeTaskMember
+  removeTaskMember,
+  addSubtask,
+  updateSubtask,
+  deleteSubtask
 };

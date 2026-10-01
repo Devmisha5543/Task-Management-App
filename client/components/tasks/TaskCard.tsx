@@ -25,9 +25,11 @@ export default function TaskCard({
 }: TaskCardProps) {
   const updateTask = useTaskStore((state) => state.updateTask);
   const deleteTask = useTaskStore((state) => state.deleteTask);
+  const toggleSubtask = useTaskStore((state) => state.toggleSubtask);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showSubtasks, setShowSubtasks] = useState(false);
 
   const handleStatusChange = async (newStatus: "todo" | "in-progress" | "done") => {
     try {
@@ -126,6 +128,10 @@ export default function TaskCard({
 
   const memberCount = task.members ? task.members.length : 1;
   const dueDateInfo = getDueDateInfo(task.dueDate, task.status);
+
+  const totalSubtasks = task.subtasks?.length || 0;
+  const completedSubtasks = task.subtasks?.filter((s) => s.completed).length || 0;
+  const subtaskProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
 
   return (
     <div className="group relative flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-gray-300 hover:shadow-md">
@@ -263,6 +269,86 @@ export default function TaskCard({
             </span>
           )}
         </div>
+
+        {/* Subtasks / Checklist Section */}
+        {totalSubtasks > 0 && (
+          <div className="mt-3.5 rounded-lg border border-gray-100 bg-gray-50/80 p-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <button
+                type="button"
+                onClick={() => setShowSubtasks(!showSubtasks)}
+                className="flex items-center gap-1.5 font-medium text-gray-700 hover:text-black transition"
+              >
+                <Icon
+                  name="check"
+                  className={`w-3.5 h-3.5 ${
+                    completedSubtasks === totalSubtasks
+                      ? "text-emerald-600"
+                      : "text-blue-600"
+                  }`}
+                />
+                <span>
+                  Checklist ({completedSubtasks}/{totalSubtasks})
+                </span>
+                <span className="text-[10px] text-gray-400">
+                  {showSubtasks ? "▲" : "▼"}
+                </span>
+              </button>
+              <span
+                className={`text-xs font-semibold ${
+                  completedSubtasks === totalSubtasks
+                    ? "text-emerald-600"
+                    : "text-gray-600"
+                }`}
+              >
+                {subtaskProgress}%
+              </span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  subtaskProgress === 100 ? "bg-emerald-500" : "bg-blue-600"
+                }`}
+                style={{ width: `${subtaskProgress}%` }}
+              />
+            </div>
+
+            {/* Expandable subtasks quick-checklist */}
+            {showSubtasks && (
+              <div className="mt-2.5 space-y-1.5 border-t border-gray-200/60 pt-2">
+                {task.subtasks?.map((subtask) => (
+                  <label
+                    key={subtask._id || subtask.title}
+                    className="flex items-center gap-2 text-xs cursor-pointer group/sub"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={subtask.completed}
+                      onChange={(e) => {
+                        if (subtask._id) {
+                          toggleSubtask(task._id, subtask._id, e.target.checked);
+                        }
+                      }}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5 cursor-pointer"
+                    />
+                    <span
+                      className={`truncate transition ${
+                        subtask.completed
+                          ? "line-through text-gray-400"
+                          : "text-gray-700 group-hover/sub:text-black"
+                      }`}
+                    >
+                      {subtask.title}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer / Quick Status Switcher */}

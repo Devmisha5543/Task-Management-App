@@ -118,3 +118,37 @@ export async function getTaskActivities(taskId: string): Promise<ActivityLog[]> 
   return data;
 }
 
+// Subtasks API
+export async function addSubtask(
+  taskId: string,
+  title: string
+): Promise<Task> {
+  const data = await mobileApiRequest(`/tasks/${taskId}/subtasks`, {
+    method: "POST",
+    body: JSON.stringify({ title }),
+  });
+  return data.task;
+}
+
+export async function updateSubtask(
+  taskId: string,
+  subtaskId: string,
+  subtaskData: { completed?: boolean; title?: string }
+): Promise<Task> {
+  const data = await mobileApiRequest(`/tasks/${taskId}/subtasks/${subtaskId}`, {
+    method: "PATCH",
+    body: JSON.stringify(subtaskData),
+  });
+  return data.task;
+}
+
+export async function deleteSubtask(
+  taskId: string,
+  subtaskId: string
+): Promise<Task> {
+  const data = await mobileApiRequest(`/tasks/${taskId}/subtasks/${subtaskId}`, {
+    method: "DELETE",
+  });
+  return data.task;
+}
+

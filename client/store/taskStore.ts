@@ -9,6 +9,9 @@ import {
   getTasks,
   removeTaskMember as removeTaskMemberApi,
   updateTask as updateTaskApi,
+  addSubtask as addSubtaskApi,
+  updateSubtask as updateSubtaskApi,
+  deleteSubtask as deleteSubtaskApi,
 } from "@/lib/taskApi";
 
 import type { CreateTaskData, Task } from "@/types/task";
@@ -31,6 +34,13 @@ interface TaskState {
     role: "editor" | "viewer"
   ) => Promise<void>;
   removeMember: (taskId: string, userId: string) => Promise<void>;
+  addSubtask: (taskId: string, title: string) => Promise<Task>;
+  toggleSubtask: (
+    taskId: string,
+    subtaskId: string,
+    completed: boolean
+  ) => Promise<Task>;
+  deleteSubtask: (taskId: string, subtaskId: string) => Promise<Task>;
 }
 
 export const useTaskStore = create<TaskState>((set) => ({
@@ -187,6 +197,101 @@ export const useTaskStore = create<TaskState>((set) => ({
             : "Failed to remove member from task",
       });
 
+      throw error;
+    }
+  },
+
+  addSubtask: async (taskId, title) => {
+    try {
+      const updatedTask = await addSubtaskApi(taskId, title);
+      set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task._id === taskId ? updatedTask : task
+        ),
+      }));
+      return updatedTask;
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to add subtask",
+      });
+      throw error;
+    }
+  },
+
+  toggleSubtask: async (taskId, subtaskId, completed) => {
+    // Optimistic update
+    set((state) => ({
+      tasks: state.tasks.map((task) => {
+        if (task._id !== taskId || !task.subtasks) return task;
+        return {
+          ...task,
+          subtasks: task.subtasks.map((sub) =>
+            sub._id === subtaskId
+              ? { ...sub, completed, completedAt: completed ? new Date().toISOString() : null }
+              : sub
+          ),
+        };
+      }),
+    }));
+
+    try {
+      const updatedTask = await updateSubtaskApi(taskId, subtaskId, { completed });
+      set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task._id === taskId ? updatedTask : task
+        ),
+      }));
+      return updatedTask;
+    } catch (error) {
+      // Re-fetch to roll back if failed
+      try {
+        const tasks = await getTasks();
+        set({ tasks });
+      } catch {}
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to update subtask",
+      });
+      throw error;
+    }
+  },
+
+  deleteSubtask: async (taskId, subtaskId) => {
+    // Optimistic update
+    set((state) => ({
+      tasks: state.tasks.map((task) => {
+        if (task._id !== taskId || !task.subtasks) return task;
+        return {
+          ...task,
+          subtasks: task.subtasks.filter((sub) => sub._id !== subtaskId),
+        };
+      }),
+    }));
+
+    try {
+      const updatedTask = await deleteSubtaskApi(taskId, subtaskId);
+      set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task._id === taskId ? updatedTask : task
+        ),
+      }));
+      return updatedTask;
+    } catch (error) {
+      try {
+        const tasks = await getTasks();
+        set({ tasks });
+      } catch {}
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete subtask",
+      });
       throw error;
     }
   },

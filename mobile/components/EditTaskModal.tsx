@@ -12,7 +12,7 @@ import {
   Platform,
 } from "react-native";
 import Icon from "./Icon";
-import type { CreateTaskData, Task } from "../types/task";
+import type { CreateTaskData, Subtask, Task } from "../types/task";
 
 interface EditTaskModalProps {
   task: Task | null;
@@ -33,6 +33,8 @@ export default function EditTaskModal({
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
   const [labels, setLabels] = useState("");
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,9 +46,41 @@ export default function EditTaskModal({
       setPriority(task.priority);
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "");
       setLabels(task.labels ? task.labels.join(", ") : "");
+      setSubtasks(task.subtasks ? [...task.subtasks] : []);
+      setNewSubtaskTitle("");
       setError(null);
     }
   }, [task]);
+
+  const handleAddSubtask = () => {
+    if (!newSubtaskTitle.trim()) return;
+    setSubtasks([
+      ...subtasks,
+      {
+        title: newSubtaskTitle.trim(),
+        completed: false,
+      },
+    ]);
+    setNewSubtaskTitle("");
+  };
+
+  const handleToggleSubtask = (index: number) => {
+    setSubtasks(
+      subtasks.map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              completed: !item.completed,
+              completedAt: !item.completed ? new Date().toISOString() : null,
+            }
+          : item
+      )
+    );
+  };
+
+  const handleDeleteSubtask = (index: number) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -72,6 +106,7 @@ export default function EditTaskModal({
         priority,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         labels: labelArray,
+        subtasks,
       });
 
       onClose();
@@ -81,6 +116,10 @@ export default function EditTaskModal({
       setLoading(false);
     }
   };
+
+  const totalSubtasks = subtasks.length;
+  const completedSubtasks = subtasks.filter((s) => s.completed).length;
+  const subtaskProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
 
   if (!task) return null;
 
@@ -226,6 +265,114 @@ export default function EditTaskModal({
               placeholder="bug, feature, urgent"
               placeholderTextColor="#9CA3AF"
             />
+
+            {/* Checklist / Subtasks Section */}
+            <View style={styles.checklistSection}>
+              <View style={styles.checklistHeader}>
+                <View style={styles.checklistTitleRow}>
+                  <Icon
+                    name="checkbox-outline"
+                    size={16}
+                    color={
+                      completedSubtasks === totalSubtasks && totalSubtasks > 0
+                        ? "#059669"
+                        : "#2563EB"
+                    }
+                  />
+                  <Text style={styles.checklistTitle}>
+                    Checklist {totalSubtasks > 0 ? `(${completedSubtasks}/${totalSubtasks})` : ""}
+                  </Text>
+                </View>
+                {totalSubtasks > 0 ? (
+                  <Text
+                    style={[
+                      styles.checklistPercent,
+                      {
+                        color:
+                          completedSubtasks === totalSubtasks
+                            ? "#059669"
+                            : "#2563EB",
+                      },
+                    ]}
+                  >
+                    {subtaskProgress}%
+                  </Text>
+                ) : null}
+              </View>
+
+              {totalSubtasks > 0 ? (
+                <View style={styles.checklistProgressBarBg}>
+                  <View
+                    style={[
+                      styles.checklistProgressBarFill,
+                      {
+                        width: `${subtaskProgress}%`,
+                        backgroundColor:
+                          completedSubtasks === totalSubtasks
+                            ? "#10B981"
+                            : "#3B82F6",
+                      },
+                    ]}
+                  />
+                </View>
+              ) : null}
+
+              {/* Subtask Items */}
+              {totalSubtasks > 0 ? (
+                <View style={styles.checklistItemsList}>
+                  {subtasks.map((item, idx) => (
+                    <View key={idx} style={styles.checklistItemRow}>
+                      <TouchableOpacity
+                        style={styles.checkboxTouchable}
+                        onPress={() => handleToggleSubtask(idx)}
+                      >
+                        <View
+                          style={[
+                            styles.checkboxBox,
+                            item.completed && styles.checkboxBoxChecked,
+                          ]}
+                        >
+                          {item.completed ? (
+                            <Icon name="checkmark-outline" size={12} color="#FFFFFF" />
+                          ) : null}
+                        </View>
+                        <Text
+                          style={[
+                            styles.checklistItemText,
+                            item.completed && styles.checklistItemTextCompleted,
+                          ]}
+                        >
+                          {item.title}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => handleDeleteSubtask(idx)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Icon name="close-circle" size={16} color="#9CA3AF" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
+              {/* Add Subtask Input */}
+              <View style={styles.subtaskInputRow}>
+                <TextInput
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                  value={newSubtaskTitle}
+                  onChangeText={setNewSubtaskTitle}
+                  placeholder="Add checklist item..."
+                  placeholderTextColor="#9CA3AF"
+                  onSubmitEditing={handleAddSubtask}
+                  returnKeyType="done"
+                />
+                <TouchableOpacity style={styles.addSubtaskBtn} onPress={handleAddSubtask}>
+                  <Text style={styles.addSubtaskBtnText}>+ Add</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </ScrollView>
 
           <View style={styles.footer}>
@@ -383,5 +530,105 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     color: "#FFFFFF",
+  },
+  checklistSection: {
+    marginTop: 14,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  checklistHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  checklistTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  checklistTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1F2937",
+  },
+  checklistPercent: {
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  checklistProgressBarBg: {
+    height: 4,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 2,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  checklistProgressBarFill: {
+    height: "100%",
+    borderRadius: 2,
+  },
+  checklistItemsList: {
+    marginTop: 10,
+    gap: 6,
+    maxHeight: 180,
+  },
+  checklistItemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  checkboxTouchable: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  checkboxBox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: "#9CA3AF",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  checkboxBoxChecked: {
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
+  },
+  checklistItemText: {
+    flex: 1,
+    fontSize: 13,
+    color: "#1F2937",
+    fontWeight: "500",
+  },
+  checklistItemTextCompleted: {
+    textDecorationLine: "line-through",
+    color: "#9CA3AF",
+  },
+  subtaskInputRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 10,
+  },
+  addSubtaskBtn: {
+    backgroundColor: "#2563EB",
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addSubtaskBtnText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
   },
 });

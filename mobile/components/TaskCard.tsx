@@ -95,6 +95,10 @@ export default function TaskCard({
   const commentsCount = task.commentsCount || 0;
   const dueDateInfo = getDueDateInfo(task.dueDate, task.status);
 
+  const totalSubtasks = task.subtasks?.length || 0;
+  const completedSubtasks = task.subtasks?.filter((s) => s.completed).length || 0;
+  const subtaskProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+
   return (
     <View style={styles.card}>
       {/* Card Header: Title & Priority */}
@@ -153,6 +157,35 @@ export default function TaskCard({
           </View>
         )}
 
+        {totalSubtasks > 0 && (
+          <View
+            style={[
+              styles.metaBadge,
+              {
+                backgroundColor: completedSubtasks === totalSubtasks ? "#ECFDF5" : "#EFF6FF",
+                borderColor: completedSubtasks === totalSubtasks ? "#A7F3D0" : "#BFDBFE",
+              },
+            ]}
+          >
+            <Icon
+              name="checkmark-outline"
+              size={13}
+              color={completedSubtasks === totalSubtasks ? "#059669" : "#2563EB"}
+            />
+            <Text
+              style={[
+                styles.metaBadgeText,
+                {
+                  color: completedSubtasks === totalSubtasks ? "#059669" : "#2563EB",
+                  fontWeight: "600",
+                },
+              ]}
+            >
+              {completedSubtasks}/{totalSubtasks} ({subtaskProgress}%)
+            </Text>
+          </View>
+        )}
+
         <TouchableOpacity
           style={styles.metaBadge}
           onPress={() => onShare(task)}
@@ -181,6 +214,23 @@ export default function TaskCard({
           <Text style={styles.metaBadgeText}>Files</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Subtask Progress Bar */}
+      {totalSubtasks > 0 && (
+        <View style={styles.subtaskProgressContainer}>
+          <View style={styles.subtaskProgressBarBg}>
+            <View
+              style={[
+                styles.subtaskProgressBarFill,
+                {
+                  width: `${subtaskProgress}%`,
+                  backgroundColor: subtaskProgress === 100 ? "#10B981" : "#3B82F6",
+                },
+              ]}
+            />
+          </View>
+        </View>
+      )}
 
       {/* Quick Status Buttons */}
       <View style={styles.statusRow}>
@@ -331,6 +381,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "600",
     color: "#4B5563",
+  },
+  subtaskProgressContainer: {
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  subtaskProgressBarBg: {
+    height: 4,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  subtaskProgressBarFill: {
+    height: "100%",
+    borderRadius: 2,
   },
   statusRow: {
     flexDirection: "row",

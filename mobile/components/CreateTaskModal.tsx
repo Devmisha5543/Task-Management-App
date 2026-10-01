@@ -31,8 +31,20 @@ export default function CreateTaskModal({
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
   const [labels, setLabels] = useState("");
+  const [subtasks, setSubtasks] = useState<{ title: string; completed: boolean }[]>([]);
+  const [subtaskInput, setSubtaskInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleAddSubtask = () => {
+    if (!subtaskInput.trim()) return;
+    setSubtasks([...subtasks, { title: subtaskInput.trim(), completed: false }]);
+    setSubtaskInput("");
+  };
+
+  const handleRemoveSubtask = (index: number) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -56,6 +68,7 @@ export default function CreateTaskModal({
         priority,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         labels: labelArray,
+        subtasks: subtasks.length > 0 ? subtasks : undefined,
       });
 
       setTitle("");
@@ -64,6 +77,8 @@ export default function CreateTaskModal({
       setPriority("medium");
       setDueDate("");
       setLabels("");
+      setSubtasks([]);
+      setSubtaskInput("");
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -218,6 +233,42 @@ export default function CreateTaskModal({
               placeholder="bug, feature, urgent"
               placeholderTextColor="#9CA3AF"
             />
+
+            {/* Subtasks / Checklist Builder */}
+            <Text style={styles.label}>
+              Checklist / Subtasks {subtasks.length > 0 ? `(${subtasks.length})` : ""}
+            </Text>
+            <View style={styles.subtaskInputRow}>
+              <TextInput
+                style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                value={subtaskInput}
+                onChangeText={setSubtaskInput}
+                placeholder="Add checklist item..."
+                placeholderTextColor="#9CA3AF"
+                onSubmitEditing={handleAddSubtask}
+                returnKeyType="done"
+              />
+              <TouchableOpacity style={styles.addSubtaskBtn} onPress={handleAddSubtask}>
+                <Text style={styles.addSubtaskBtnText}>+ Add</Text>
+              </TouchableOpacity>
+            </View>
+
+            {subtasks.length > 0 ? (
+              <View style={styles.subtasksList}>
+                {subtasks.map((item, idx) => (
+                  <View key={idx} style={styles.subtaskItem}>
+                    <View style={styles.subtaskBullet} />
+                    <Text style={styles.subtaskItemText}>{item.title}</Text>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveSubtask(idx)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Icon name="close-circle" size={16} color="#9CA3AF" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            ) : null}
           </ScrollView>
 
           <View style={styles.btnRow}>
@@ -370,5 +421,54 @@ const styles = StyleSheet.create({
   submitText: {
     fontWeight: "700",
     color: "#FFFFFF",
+  },
+  subtaskInputRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 8,
+  },
+  addSubtaskBtn: {
+    backgroundColor: "#111827",
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addSubtaskBtnText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  subtasksList: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 8,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginBottom: 14,
+  },
+  subtaskItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
+  subtaskBullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#3B82F6",
+    marginRight: 8,
+  },
+  subtaskItemText: {
+    flex: 1,
+    fontSize: 12,
+    color: "#374151",
+    fontWeight: "500",
   },
 });

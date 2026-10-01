@@ -44,6 +44,13 @@ export interface TaskComment {
   updatedAt: string;
 }
 
+export interface Subtask {
+  _id?: string;
+  title: string;
+  completed: boolean;
+  completedAt?: string | null;
+}
+
 export interface Task {
   _id: string;
   title: string;
@@ -52,6 +59,7 @@ export interface Task {
   priority: "low" | "medium" | "high";
   dueDate?: string | null;
   labels: string[];
+  subtasks?: Subtask[];
   createdBy:
     | string
     | {
@@ -72,6 +80,7 @@ export interface CreateTaskData {
   priority?: "low" | "medium" | "high";
   dueDate?: string | null;
   labels?: string[];
+  subtasks?: Subtask[];
 }
 
 export interface ActivityLog {
@@ -93,7 +102,11 @@ export interface ActivityLog {
     | "added_attachment"
     | "deleted_attachment"
     | "added_comment"
-    | "deleted_comment";
+    | "deleted_comment"
+    | "added_subtask"
+    | "completed_subtask"
+    | "uncompleted_subtask"
+    | "deleted_subtask";
   details?: Record<string, any>;
   createdAt: string;
 }

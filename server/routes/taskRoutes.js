@@ -7,7 +7,10 @@ const {
   deleteTask,
   addTaskMember,
   getTaskMembers,
-  removeTaskMember
+  removeTaskMember,
+  addSubtask,
+  updateSubtask,
+  deleteSubtask
 } = require("../controllers/taskController");
 
 const protect = require("../middleware/authMiddleware");
@@ -34,6 +37,11 @@ router.post("/", protect, createTask);
 router.get("/", protect, getTasks);
 router.put("/:id", protect, updateTask);
 router.delete("/:id", protect, deleteTask);
+
+// Subtask routes
+router.post("/:id/subtasks", protect, addSubtask);
+router.patch("/:id/subtasks/:subtaskId", protect, updateSubtask);
+router.delete("/:id/subtasks/:subtaskId", protect, deleteSubtask);
 
 router.post("/:id/members", protect, addTaskMember);
 

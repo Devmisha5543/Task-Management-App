@@ -26,6 +26,10 @@ const activitySchema = new mongoose.Schema(
         "deleted_attachment",
         "added_comment",
         "deleted_comment",
+        "added_subtask",
+        "completed_subtask",
+        "uncompleted_subtask",
+        "deleted_subtask",
       ],
     },
     details: {
