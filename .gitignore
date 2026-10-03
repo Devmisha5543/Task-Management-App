@@ -6,3 +6,10 @@ dist/
 **/.env*
 atlas-credentials.env
 .expo/
+
+# Exclude phone APK updates and builder scripts
+build_android_apk.*
+mobile/eas.json
+*.apk
+client/public/downloads/
+client/app/api/download/

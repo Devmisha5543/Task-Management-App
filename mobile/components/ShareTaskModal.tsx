@@ -17,17 +17,24 @@ import type { Task, TaskMember } from "../types/task";
 
 interface ShareTaskModalProps {
   task: Task | null;
-  visible: boolean;
+  visible?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
-  onMembersUpdated: () => void;
+  onMembersUpdated?: () => void;
+  onTaskUpdated?: (updated: Task) => void;
+  onUpdated?: (updated: Task) => void;
 }
 
 export default function ShareTaskModal({
   task,
   visible,
+  isOpen,
   onClose,
   onMembersUpdated,
+  onTaskUpdated,
+  onUpdated,
 }: ShareTaskModalProps) {
+  const isModalVisible = Boolean((visible ?? isOpen ?? (task !== null)) && task !== null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"editor" | "viewer">("editor");
   const [members, setMembers] = useState<TaskMember[]>([]);
@@ -93,7 +100,12 @@ export default function ShareTaskModal({
   if (!task) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal
+      visible={isModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.overlay}

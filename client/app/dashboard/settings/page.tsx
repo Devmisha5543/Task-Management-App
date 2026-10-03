@@ -321,7 +321,43 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* 4. Account & Profile Shortcuts */}
+      {/* 4. TaskFlow Mobile App */}
+      <section className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs transition-colors">
+        <div className="flex items-center gap-2.5 pb-4 border-b border-gray-100 dark:border-zinc-800">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+            <Icon name="smartphone" className="h-4 w-4" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">
+              TaskFlow Mobile App (Android &amp; iPhone)
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-zinc-400">
+              Run natively on your phone via Expo Go, install as a PWA, or download the Android APK.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+              Native iOS &amp; Android Experience
+            </p>
+            <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+              Sync tasks, receive real-time notifications, and access your workflow on the go.
+            </p>
+          </div>
+
+          <Link
+            href="/dashboard/mobile"
+            className="inline-flex items-center gap-2 rounded-xl bg-black dark:bg-white text-white dark:text-black px-4 py-2.5 text-xs font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition shadow-sm w-fit"
+          >
+            <Icon name="smartphone" className="h-4 w-4 text-white dark:text-black" />
+            <span>Get Mobile App</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* 5. Account & Profile Shortcuts */}
       <section className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs transition-colors">
         <div className="flex items-center gap-2.5 pb-4 border-b border-gray-100 dark:border-zinc-800">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">

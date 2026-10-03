@@ -54,11 +54,11 @@ export default function Home() {
       <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-6 py-20 text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs font-semibold text-blue-400 backdrop-blur-md">
           <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
-          Organize & Collaborate Effortlessly
+          Organize &amp; Collaborate Effortlessly
         </div>
 
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">
-          Smart Task Management for Individuals & Teams
+          Smart Task Management for Individuals &amp; Teams
         </h1>
 
         <p className="mt-6 max-w-2xl text-base text-gray-400 sm:text-lg">
@@ -86,7 +86,7 @@ export default function Home() {
             <div className="mb-3 text-blue-400">
               <Icon name="clipboard" className="w-8 h-8" />
             </div>
-            <h3 className="font-bold text-white">Kanban & List Views</h3>
+            <h3 className="font-bold text-white">Kanban &amp; List Views</h3>
             <p className="mt-2 text-xs text-gray-400">
               Switch seamlessly between interactive Kanban boards and filtered list views.
             </p>

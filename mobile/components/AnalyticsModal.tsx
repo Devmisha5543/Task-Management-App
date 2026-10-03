@@ -7,23 +7,26 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "./Icon";
 import { getTaskAnalytics, shareTasksData } from "../lib/analyticsApi";
 import type { Task, TaskAnalytics } from "../types/task";
 
 interface AnalyticsModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
+  visible?: boolean;
   onClose: () => void;
   tasks: Task[];
 }
 
 export default function AnalyticsModal({
   isOpen,
+  visible,
   onClose,
   tasks,
 }: AnalyticsModalProps) {
+  const isModalVisible = Boolean(visible ?? isOpen);
   const [analytics, setAnalytics] = useState<TaskAnalytics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +70,12 @@ export default function AnalyticsModal({
   const subtasksTotal = analytics?.subtasks?.total ?? 0;
 
   return (
-    <Modal visible={isOpen} animationType="slide" transparent={false}>
+    <Modal
+      visible={isModalVisible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>

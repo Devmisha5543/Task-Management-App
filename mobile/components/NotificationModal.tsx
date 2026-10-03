@@ -7,8 +7,8 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "./Icon";
 import {
   getNotifications,
@@ -20,16 +20,19 @@ import {
 import type { NotificationItem } from "../types/notification";
 
 interface NotificationModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
+  visible?: boolean;
   onClose: () => void;
   onUnreadCountChange?: (count: number) => void;
 }
 
 export default function NotificationModal({
   isOpen,
+  visible,
   onClose,
   onUnreadCountChange,
 }: NotificationModalProps) {
+  const isModalVisible = Boolean(visible ?? isOpen);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -143,7 +146,12 @@ export default function NotificationModal({
   };
 
   return (
-    <Modal visible={isOpen} animationType="slide" transparent={false}>
+    <Modal
+      visible={isModalVisible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>

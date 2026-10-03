@@ -12,23 +12,31 @@ import {
   Platform,
 } from "react-native";
 import Icon from "./Icon";
+import { updateTask } from "../lib/taskApi";
 import type { CreateTaskData, Subtask, Task } from "../types/task";
 
 interface EditTaskModalProps {
   task: Task | null;
-  visible: boolean;
+  visible?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
-  onSubmit: (id: string, data: CreateTaskData) => Promise<void>;
+  onSubmit?: (id: string, data: Partial<CreateTaskData>) => Promise<void>;
+  onUpdate?: (id: string, updates: Partial<CreateTaskData>) => Promise<void>;
+  onUpdated?: (updated: Task) => void;
   availableTasks?: Task[];
 }
 
 export default function EditTaskModal({
   task,
   visible,
+  isOpen,
   onClose,
   onSubmit,
+  onUpdate,
+  onUpdated,
   availableTasks = [],
 }: EditTaskModalProps) {
+  const isModalVisible = Boolean((visible ?? isOpen ?? (task !== null)) && task !== null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
@@ -108,7 +116,8 @@ export default function EditTaskModal({
         .map((l) => l.trim())
         .filter(Boolean);
 
-      await onSubmit(task._id, {
+      const submitHandler = onSubmit || onUpdate;
+      const payload: Partial<CreateTaskData> = {
         title: title.trim(),
         description: description.trim() || undefined,
         status,
@@ -119,7 +128,14 @@ export default function EditTaskModal({
         isRecurring: recurrence !== "none",
         recurrence,
         dependencies: selectedDependencies,
-      });
+      };
+
+      if (submitHandler) {
+        await submitHandler(task._id, payload);
+      } else if (onUpdated) {
+        const updated = await updateTask(task._id, payload);
+        onUpdated(updated);
+      }
 
       onClose();
     } catch (err: unknown) {
@@ -136,7 +152,12 @@ export default function EditTaskModal({
   if (!task) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal
+      visible={isModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.overlay}

@@ -18,7 +18,8 @@ import type { Task, TaskComment } from "../types/task";
 
 interface TaskCommentsModalProps {
   task: Task | null;
-  visible: boolean;
+  visible?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   onCommentChange?: () => void;
 }
@@ -26,9 +27,11 @@ interface TaskCommentsModalProps {
 export default function TaskCommentsModal({
   task,
   visible,
+  isOpen,
   onClose,
   onCommentChange,
 }: TaskCommentsModalProps) {
+  const isModalVisible = Boolean((visible ?? isOpen ?? (task !== null)) && task !== null);
   const [comments, setComments] = useState<TaskComment[]>([]);
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState("");
@@ -100,7 +103,12 @@ export default function TaskCommentsModal({
   if (!task) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal
+      visible={isModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.overlay}

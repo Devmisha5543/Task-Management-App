@@ -20,15 +20,22 @@ import type { Task, TaskAttachment } from "../types/task";
 
 interface TaskAttachmentsModalProps {
   task: Task | null;
-  visible: boolean;
+  visible?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
+  onTaskUpdated?: (updated: Task) => void;
+  onUpdated?: (updated: Task) => void;
 }
 
 export default function TaskAttachmentsModal({
   task,
   visible,
+  isOpen,
   onClose,
+  onTaskUpdated,
+  onUpdated,
 }: TaskAttachmentsModalProps) {
+  const isModalVisible = Boolean((visible ?? isOpen ?? (task !== null)) && task !== null);
   const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -126,7 +133,12 @@ export default function TaskAttachmentsModal({
   if (!task) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal
+      visible={isModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <View style={styles.overlay}>
         <View style={styles.modalCard}>
           <View style={styles.header}>

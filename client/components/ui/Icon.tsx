@@ -41,7 +41,8 @@ export type WebIconName =
   | "settings"
   | "monitor"
   | "sidebar"
-  | "chevron-down";
+  | "chevron-down"
+  | "smartphone";
 
 interface WebIconProps {
   name: WebIconName;
@@ -187,6 +188,15 @@ export default function Icon({ name, className = "w-5 h-5", size }: WebIconProps
         );
       case "chevron-down":
         return <path d="M19 9l-7 7-7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />;
+      case "smartphone":
+        return (
+          <path
+            d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        );
       default:
         return null;
     }

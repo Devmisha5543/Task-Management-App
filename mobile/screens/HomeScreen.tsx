@@ -2,14 +2,14 @@ import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   createTask,
   deleteTask,
@@ -17,76 +17,58 @@ import {
   updateTask,
 } from "../lib/taskApi";
 import { getNotifications } from "../lib/notificationApi";
-import { setAuthToken } from "../lib/api";
 import type { CreateTaskData, Task } from "../types/task";
 import type { User } from "../types/auth";
 import Icon from "../components/Icon";
-import TaskCard from "../components/TaskCard";
-import TaskStats from "../components/TaskStats";
-import TaskFilters from "../components/TaskFilters";
-import KanbanBoard from "../components/KanbanBoard";
 import CreateTaskModal from "../components/CreateTaskModal";
 import EditTaskModal from "../components/EditTaskModal";
-import ShareTaskModal from "../components/ShareTaskModal";
-import TaskAttachmentsModal from "../components/TaskAttachmentsModal";
-import TaskCommentsModal from "../components/TaskCommentsModal";
-import TaskActivityModal from "../components/TaskActivityModal";
 import NotificationModal from "../components/NotificationModal";
 import AnalyticsModal from "../components/AnalyticsModal";
+import { theme } from "../components/ui/theme";
 
 interface HomeScreenProps {
   user: User;
   onLogout: () => void;
   onNavigateToProfile?: () => void;
+  onNavigateToTasks?: () => void;
+  onNavigateToShared?: () => void;
+  onNavigateToCalendar?: () => void;
+  onNavigateToSettings?: () => void;
 }
 
 export default function HomeScreen({
   user,
   onLogout,
   onNavigateToProfile,
+  onNavigateToTasks,
+  onNavigateToShared,
+  onNavigateToCalendar,
+  onNavigateToSettings,
 }: HomeScreenProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Filters & State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [priorityFilter, setPriorityFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
-  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [sharingTask, setSharingTask] = useState<Task | null>(null);
-  const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
-  const [commentingTask, setCommentingTask] = useState<Task | null>(null);
-  const [activityTask, setActivityTask] = useState<Task | null>(null);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
 
-  const fetchMobileTasks = async () => {
+  const fetchDashboardData = async () => {
     try {
-      setError(null);
       const fetched = await getTasks();
       setTasks(fetched);
 
-      // Also refresh unread notification count
       try {
         const notifData = await getNotifications();
         setUnreadNotifs(notifData.unreadCount || 0);
       } catch {
-        // quiet error
+        // ignore
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to load tasks");
-      }
+      console.warn("Failed to load dashboard tasks:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -94,453 +76,706 @@ export default function HomeScreen({
   };
 
   useEffect(() => {
-    fetchMobileTasks();
+    fetchDashboardData();
   }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchMobileTasks();
+    fetchDashboardData();
   };
 
-  const handleStatusChange = async (
-    task: Task,
-    newStatus: "todo" | "in-progress" | "done"
-  ) => {
+  const handleQuickToggleStatus = async (task: Task) => {
+    const nextStatus = task.status === "done" ? "todo" : "done";
     try {
-      const updated = await updateTask(task._id, {
-        title: task.title,
-        description: task.description,
-        status: newStatus,
-        priority: task.priority,
-        labels: task.labels,
-      });
-
+      const updated = await updateTask(task._id, { status: nextStatus });
       setTasks((prev) =>
-        prev.map((t) => (t._id === task._id ? updated : t))
+        prev.map((t) => (t._id === task._id ? { ...t, ...updated } : t))
       );
-    } catch (err) {
-      console.error("Failed to update status on mobile:", err);
+    } catch (err: unknown) {
+      console.warn("Quick status update failed:", err);
     }
   };
 
-  const handleEditSubmit = async (id: string, data: CreateTaskData) => {
-    const updated = await updateTask(id, data);
-    setTasks((prev) => prev.map((t) => (t._id === id ? updated : t)));
-  };
+  // Metrics
+  const stats = useMemo(() => {
+    const total = tasks.length;
+    const todo = tasks.filter((t) => t.status === "todo").length;
+    const inProgress = tasks.filter((t) => t.status === "in-progress").length;
+    const done = tasks.filter((t) => t.status === "done").length;
+    const highPriority = tasks.filter((t) => t.priority === "high" && t.status !== "done").length;
 
-  const handleDeleteTask = async (taskId: string) => {
-    try {
-      await deleteTask(taskId);
-      setTasks((prev) => prev.filter((t) => t._id !== taskId));
-    } catch (err) {
-      console.error("Failed to delete task on mobile:", err);
-    }
-  };
+    return { total, todo, inProgress, done, highPriority };
+  }, [tasks]);
 
-  const handleCreateTask = async (taskData: CreateTaskData) => {
-    const newTask = await createTask(taskData);
-    setTasks((prev) => [newTask, ...prev]);
-  };
+  // Urgent / Due Soon Tasks
+  const urgentTasks = useMemo(() => {
+    return tasks
+      .filter((t) => t.status !== "done")
+      .sort((a, b) => {
+        if (a.priority === "high" && b.priority !== "high") return -1;
+        if (b.priority === "high" && a.priority !== "high") return 1;
+        if (a.dueDate && b.dueDate) {
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        }
+        return 0;
+      })
+      .slice(0, 4);
+  }, [tasks]);
 
-  // Filter & Sort Logic
-  const filteredTasks = useMemo(() => {
-    let result = tasks.filter((task) => {
-      const matchesSearch =
-        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (task.description &&
-          task.description.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesStatus =
-        statusFilter === "all" || task.status === statusFilter;
-
-      const matchesPriority =
-        priorityFilter === "all" || task.priority === priorityFilter;
-
-      return matchesSearch && matchesStatus && matchesPriority;
-    });
-
-    result = [...result].sort((a, b) => {
-      if (sortBy === "oldest") {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      }
-      if (sortBy === "priority-desc") {
-        const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
-        return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
-      }
-      if (sortBy === "title-asc") {
-        return a.title.localeCompare(b.title);
-      }
-      if (sortBy === "due-soon") {
-        if (!a.dueDate && !b.dueDate) return 0;
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-      }
-      if (sortBy === "due-late") {
-        if (!a.dueDate && !b.dueDate) return 0;
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
-      }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-
-    return result;
-  }, [tasks, searchQuery, statusFilter, priorityFilter, sortBy]);
-
-  const handleLogoutPress = async () => {
-    await setAuthToken(null);
-    onLogout();
+  // Greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Mobile Top Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.profileHeaderBtn}
-          onPress={onNavigateToProfile}
-          activeOpacity={0.7}
-        >
-          <View style={styles.headerAvatar}>
-            {user.profilePhoto ? (
-              <Image source={{ uri: user.profilePhoto }} style={styles.headerAvatarImg} />
-            ) : (
-              <Text style={styles.headerAvatarText}>
-                {user.username ? user.username.slice(0, 2).toUpperCase() : "U"}
-              </Text>
-            )}
-          </View>
-
-          <View>
-            <Text style={styles.greeting}>TaskFlow Mobile</Text>
-            <Text style={styles.username}>@{user.username}</Text>
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.headerRightActions}>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => setIsAnalyticsOpen(true)}
-            style={styles.headerIconBtn}
-            accessibilityLabel="Analytics & Export"
+            style={styles.profileSection}
+            onPress={onNavigateToProfile}
+            activeOpacity={0.7}
           >
-            <Icon name="stats-chart-outline" size={17} color="#374151" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setIsNotifOpen(true)}
-            style={styles.headerIconBtn}
-            accessibilityLabel="Notifications"
-          >
-            <Icon name="notifications-outline" size={17} color="#374151" />
-            {unreadNotifs > 0 && (
-              <View style={styles.headerNotifBadge}>
-                <Text style={styles.headerNotifBadgeText}>
-                  {unreadNotifs > 9 ? "9+" : unreadNotifs}
+            <View style={styles.avatarWrapper}>
+              {user.profilePhoto ? (
+                <Image source={{ uri: user.profilePhoto }} style={styles.avatarImg} />
+              ) : (
+                <Text style={styles.avatarText}>
+                  {user.username ? user.username.slice(0, 2).toUpperCase() : "U"}
                 </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={handleLogoutPress} style={styles.logoutBtn}>
-            <Icon name="log-out-outline" size={14} color="#374151" />
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      {/* Main Content Area */}
-      {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#111827" />
-          <Text style={styles.loadingText}>Loading your tasks...</Text>
-        </View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          {/* Dashboard Stats Summary Bar */}
-          <TaskStats tasks={tasks} />
-
-          {/* Filters, Search & View Switcher */}
-          <TaskFilters
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            priorityFilter={priorityFilter}
-            onPriorityFilterChange={setPriorityFilter}
-            sortBy={sortBy}
-            onSortByChange={setSortBy}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-
-          {/* Task View: List vs Kanban */}
-          {viewMode === "kanban" ? (
-            <KanbanBoard
-              tasks={filteredTasks}
-              onStatusChange={handleStatusChange}
-              onEdit={(t) => setEditingTask(t)}
-              onShare={(t) => setSharingTask(t)}
-              onAttachments={(t) => setAttachmentTask(t)}
-              onComments={(t) => setCommentingTask(t)}
-              onActivity={(t) => setActivityTask(t)}
-              onDelete={handleDeleteTask}
-            />
-          ) : (
-            <FlatList
-              data={filteredTasks}
-              keyExtractor={(item) => item._id}
-              renderItem={({ item }) => (
-                <TaskCard
-                  task={item}
-                  onStatusChange={handleStatusChange}
-                  onEdit={(t) => setEditingTask(t)}
-                  onShare={(t) => setSharingTask(t)}
-                  onAttachments={(t) => setAttachmentTask(t)}
-                  onComments={(t) => setCommentingTask(t)}
-                  onActivity={(t) => setActivityTask(t)}
-                  onDelete={handleDeleteTask}
-                />
               )}
-              contentContainerStyle={styles.listContent}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                  tintColor="#111827"
-                />
-              }
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Icon name="document-text-outline" size={32} color="#9CA3AF" />
-                  <Text style={styles.emptyTitle}>No tasks found</Text>
-                  <Text style={styles.emptySubtitle}>
-                    {searchQuery || statusFilter !== "all" || priorityFilter !== "all"
-                      ? "No tasks match your search and filter criteria."
-                      : "Tap + to create your first task!"}
+              <View style={styles.avatarOnlineDot} />
+            </View>
+
+            <View style={styles.greetingMeta}>
+              <Text style={styles.greetingText}>{getGreeting()},</Text>
+              <Text style={styles.usernameText}>{user.name || user.username}</Text>
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.headerIconBtn}
+              onPress={() => setIsAnalyticsOpen(true)}
+              accessibilityLabel="Analytics"
+            >
+              <Icon name="stats-chart-outline" size={18} color="#0F172A" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.headerIconBtn}
+              onPress={() => setIsNotifOpen(true)}
+              accessibilityLabel="Notifications"
+            >
+              <Icon name="notifications-outline" size={18} color="#0F172A" />
+              {unreadNotifs > 0 && (
+                <View style={styles.notifBadge}>
+                  <Text style={styles.notifBadgeText}>
+                    {unreadNotifs > 9 ? "9+" : unreadNotifs}
                   </Text>
                 </View>
-              }
-            />
-          )}
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.headerIconBtn}
+              onPress={onNavigateToSettings}
+              accessibilityLabel="Settings"
+            >
+              <Icon name="create-outline" size={18} color="#0F172A" />
+            </TouchableOpacity>
+          </View>
         </View>
-      )}
 
-      {/* Floating Action Button (FAB) */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => setIsCreateOpen(true)}
-      >
-        <Icon name="add" size={28} color="#FFFFFF" />
-      </TouchableOpacity>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary500} />
+            <Text style={styles.loadingText}>Refreshing dashboard...</Text>
+          </View>
+        ) : (
+          <>
+            {/* Metric Cards Grid */}
+            <View style={styles.metricsGrid}>
+              {/* Total Tasks */}
+              <TouchableOpacity
+                style={[styles.metricCard, { backgroundColor: theme.colors.primary50, borderColor: theme.colors.primary100 }]}
+                onPress={onNavigateToTasks}
+                activeOpacity={0.7}
+              >
+                <View style={styles.metricCardTop}>
+                  <Text style={[styles.metricNumber, { color: theme.colors.primary700 }]}>
+                    {stats.total}
+                  </Text>
+                  <View style={[styles.metricIconBg, { backgroundColor: theme.colors.surface }]}>
+                    <Icon name="list-outline" size={16} color={theme.colors.primary600} />
+                  </View>
+                </View>
+                <Text style={[styles.metricLabel, { color: theme.colors.primary700 }]}>Total Tasks</Text>
+              </TouchableOpacity>
 
-      {/* Modals */}
-      <CreateTaskModal
-        visible={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onSubmit={handleCreateTask}
-        availableTasks={tasks}
-      />
+              {/* In Progress */}
+              <TouchableOpacity
+                style={[styles.metricCard, { backgroundColor: theme.colors.infoLight, borderColor: theme.colors.infoBorder }]}
+                onPress={onNavigateToTasks}
+                activeOpacity={0.7}
+              >
+                <View style={styles.metricCardTop}>
+                  <Text style={[styles.metricNumber, { color: theme.colors.info }]}>
+                    {stats.inProgress}
+                  </Text>
+                  <View style={[styles.metricIconBg, { backgroundColor: theme.colors.surface }]}>
+                    <Icon name="time-outline" size={16} color={theme.colors.info} />
+                  </View>
+                </View>
+                <Text style={[styles.metricLabel, { color: theme.colors.info }]}>In Progress</Text>
+              </TouchableOpacity>
 
-      <EditTaskModal
-        task={editingTask}
-        visible={!!editingTask}
-        onClose={() => setEditingTask(null)}
-        onSubmit={handleEditSubmit}
-        availableTasks={tasks}
-      />
+              {/* Completed */}
+              <TouchableOpacity
+                style={[styles.metricCard, { backgroundColor: theme.colors.successLight, borderColor: theme.colors.successBorder }]}
+                onPress={onNavigateToTasks}
+                activeOpacity={0.7}
+              >
+                <View style={styles.metricCardTop}>
+                  <Text style={[styles.metricNumber, { color: theme.colors.success }]}>
+                    {stats.done}
+                  </Text>
+                  <View style={[styles.metricIconBg, { backgroundColor: theme.colors.surface }]}>
+                    <Icon name="checkmark-outline" size={16} color={theme.colors.success} />
+                  </View>
+                </View>
+                <Text style={[styles.metricLabel, { color: theme.colors.success }]}>Completed</Text>
+              </TouchableOpacity>
 
-      <ShareTaskModal
-        task={sharingTask}
-        visible={!!sharingTask}
-        onClose={() => setSharingTask(null)}
-        onMembersUpdated={fetchMobileTasks}
-      />
+              {/* High Priority */}
+              <TouchableOpacity
+                style={[styles.metricCard, { backgroundColor: theme.colors.dangerLight, borderColor: theme.colors.dangerBorder }]}
+                onPress={onNavigateToTasks}
+                activeOpacity={0.7}
+              >
+                <View style={styles.metricCardTop}>
+                  <Text style={[styles.metricNumber, { color: theme.colors.danger }]}>
+                    {stats.highPriority}
+                  </Text>
+                  <View style={[styles.metricIconBg, { backgroundColor: theme.colors.surface }]}>
+                    <Icon name="alert-circle-outline" size={16} color={theme.colors.danger} />
+                  </View>
+                </View>
+                <Text style={[styles.metricLabel, { color: theme.colors.danger }]}>High Priority</Text>
+              </TouchableOpacity>
+            </View>
 
-      <TaskAttachmentsModal
-        task={attachmentTask}
-        visible={!!attachmentTask}
-        onClose={() => setAttachmentTask(null)}
-      />
+            {/* Quick Actions Bar */}
+            <View style={styles.section}>
+              <View style={styles.quickActionsRow}>
+                <TouchableOpacity
+                  style={styles.primaryActionBtn}
+                  onPress={() => setIsCreateOpen(true)}
+                  activeOpacity={0.8}
+                >
+                  <Icon name="add" size={18} color="#FFFFFF" />
+                  <Text style={styles.primaryActionText}>New Task</Text>
+                </TouchableOpacity>
 
-      <TaskCommentsModal
-        task={commentingTask}
-        visible={!!commentingTask}
-        onClose={() => setCommentingTask(null)}
-        onCommentChange={fetchMobileTasks}
-      />
+                <TouchableOpacity
+                  style={styles.secondaryActionBtn}
+                  onPress={onNavigateToTasks}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="list-outline" size={16} color="#0F172A" />
+                  <Text style={styles.secondaryActionText}>My Tasks</Text>
+                </TouchableOpacity>
 
-      <TaskActivityModal
-        task={activityTask}
-        visible={!!activityTask}
-        onClose={() => setActivityTask(null)}
-      />
+                <TouchableOpacity
+                  style={styles.secondaryActionBtn}
+                  onPress={onNavigateToShared}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="people-outline" size={16} color="#0F172A" />
+                  <Text style={styles.secondaryActionText}>Shared</Text>
+                </TouchableOpacity>
 
-      <NotificationModal
-        isOpen={isNotifOpen}
-        onClose={() => setIsNotifOpen(false)}
-        onUnreadCountChange={setUnreadNotifs}
-      />
+                <TouchableOpacity
+                  style={styles.secondaryActionBtn}
+                  onPress={onNavigateToCalendar}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="calendar-outline" size={16} color="#0F172A" />
+                  <Text style={styles.secondaryActionText}>Calendar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-      <AnalyticsModal
-        isOpen={isAnalyticsOpen}
-        onClose={() => setIsAnalyticsOpen(false)}
-        tasks={tasks}
-      />
+            {/* Urgent & Today's Deadlines Section */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeaderRow}>
+                <View>
+                  <Text style={styles.sectionTitle}>Urgent &amp; Upcoming</Text>
+                  <Text style={styles.sectionSubtitle}>Tasks requiring your attention</Text>
+                </View>
+
+                {onNavigateToTasks && (
+                  <TouchableOpacity onPress={onNavigateToTasks}>
+                    <Text style={styles.viewAllText}>View All &gt;</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {urgentTasks.length === 0 ? (
+                <View style={styles.allCaughtUpCard}>
+                  <View style={styles.caughtUpIconBg}>
+                    <Icon name="checkmark-outline" size={20} color={theme.colors.success} />
+                  </View>
+                  <Text style={styles.caughtUpTitle}>You&apos;re all caught up!</Text>
+                  <Text style={styles.caughtUpDesc}>No urgent pending tasks on your plate right now.</Text>
+                </View>
+              ) : (
+                <View style={styles.tasksList}>
+                  {urgentTasks.map((t) => (
+                    <View key={t._id} style={styles.compactTaskCard}>
+                      <TouchableOpacity
+                        style={[
+                          styles.checkboxBtn,
+                          t.status === "done" && styles.checkboxBtnDone,
+                        ]}
+                        onPress={() => handleQuickToggleStatus(t)}
+                      >
+                        {t.status === "done" && (
+                          <Icon name="checkmark-outline" size={12} color="#FFFFFF" />
+                        )}
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.compactTaskMeta}
+                        onPress={() => setEditingTask(t)}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.compactTaskTitle,
+                            t.status === "done" && styles.compactTaskTitleDone,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {t.title}
+                        </Text>
+                        <View style={styles.compactTaskSubRow}>
+                          <View
+                            style={[
+                              styles.priorityBadge,
+                              t.priority === "high" && styles.priorityBadgeHigh,
+                              t.priority === "medium" && styles.priorityBadgeMed,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.priorityBadgeText,
+                                t.priority === "high" && styles.priorityBadgeTextHigh,
+                                t.priority === "medium" && styles.priorityBadgeTextMed,
+                              ]}
+                            >
+                              {t.priority.toUpperCase()}
+                            </Text>
+                          </View>
+
+                          {t.dueDate && (
+                            <Text style={styles.compactDueDateText}>
+                              Due {new Date(t.dueDate).toLocaleDateString([], { month: "short", day: "numeric" })}
+                            </Text>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.compactEditBtn}
+                        onPress={() => setEditingTask(t)}
+                      >
+                        <Icon name="create-outline" size={14} color="#94A3B8" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* Modals */}
+        <CreateTaskModal
+          visible={isCreateOpen}
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onCreate={async (data: CreateTaskData) => {
+            try {
+              const created = await createTask(data);
+              setTasks((prev) => [created, ...prev]);
+              setIsCreateOpen(false);
+            } catch (err) {
+              console.warn("Failed to create task:", err);
+            }
+          }}
+        />
+
+        {editingTask && (
+          <EditTaskModal
+            visible={!!editingTask}
+            isOpen={!!editingTask}
+            task={editingTask}
+            onClose={() => setEditingTask(null)}
+            onUpdate={async (id: string, updates: Partial<CreateTaskData>) => {
+              try {
+                const updated = await updateTask(id, updates);
+                setTasks((prev) => prev.map((t) => (t._id === id ? { ...t, ...updated } : t)));
+                setEditingTask(null);
+              } catch (err) {
+                console.warn("Failed to update task:", err);
+              }
+            }}
+          />
+        )}
+
+        <NotificationModal
+          isOpen={isNotifOpen}
+          onClose={() => {
+            setIsNotifOpen(false);
+            setUnreadNotifs(0);
+          }}
+        />
+
+        <AnalyticsModal
+          isOpen={isAnalyticsOpen}
+          onClose={() => setIsAnalyticsOpen(false)}
+          tasks={tasks}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+  },
+  contentContainer: {
+    padding: 18,
+    paddingBottom: 40,
   },
   header: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    marginBottom: 20,
   },
-  profileHeaderBtn: {
+  profileSection: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
   },
-  headerAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#111827",
+  avatarWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primary50,
+    borderWidth: 1.5,
+    borderColor: theme.colors.primary100,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
+    position: "relative",
   },
-  headerAvatarImg: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+  avatarImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
-  headerAvatarText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  greeting: {
-    fontSize: 11,
+  avatarText: {
+    fontSize: 16,
     fontWeight: "700",
-    color: "#6B7280",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+    color: theme.colors.primary600,
   },
-  username: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#111827",
+  avatarOnlineDot: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: theme.colors.success,
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
   },
-  logoutBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "#F3F4F6",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+  greetingMeta: {
+    gap: 1,
   },
-  logoutText: {
+  greetingText: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "#374151",
+    color: theme.colors.textSecondary,
+    fontWeight: "500",
   },
-  headerRightActions: {
+  usernameText: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+  },
+  headerActions: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
   headerIconBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: "#F3F4F6",
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    ...theme.shadows.sm,
   },
-  headerNotifBadge: {
+  notifBadge: {
     position: "absolute",
-    top: -3,
-    right: -3,
-    backgroundColor: "#DC2626",
+    top: -2,
+    right: -2,
+    backgroundColor: theme.colors.danger,
     borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
     minWidth: 16,
-    height: 16,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 3,
   },
-  headerNotifBadgeText: {
-    color: "#FFFFFF",
+  notifBadgeText: {
     fontSize: 9,
-    fontWeight: "700",
+    fontWeight: "800",
+    color: "#FFFFFF",
   },
-  errorText: {
-    color: "#EF4444",
-    fontSize: 13,
-    paddingHorizontal: 20,
-    marginTop: 8,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 90,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
+  loadingContainer: {
+    paddingVertical: 60,
     alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
   loadingText: {
-    marginTop: 12,
     fontSize: 13,
-    color: "#6B7280",
+    color: theme.colors.textSecondary,
   },
-  emptyContainer: {
+  metricsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 20,
+  },
+  metricCard: {
+    flex: 1,
+    minWidth: "46%",
+    padding: 14,
+    borderRadius: theme.radii.xl,
+    borderWidth: 1,
+    ...theme.shadows.sm,
+  },
+  metricCardTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  metricNumber: {
+    fontSize: 24,
+    fontWeight: "800",
+  },
+  metricIconBg: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 60,
-    gap: 6,
   },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#374151",
-    marginTop: 4,
-  },
-  emptySubtitle: {
+  metricLabel: {
     fontSize: 12,
-    color: "#9CA3AF",
-    textAlign: "center",
-    paddingHorizontal: 30,
+    fontWeight: "600",
   },
-  fab: {
-    position: "absolute",
-    bottom: 24,
-    right: 24,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: "#111827",
-    justifyContent: "center",
+  section: {
+    marginBottom: 22,
+  },
+  quickActionsRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  primaryActionBtn: {
+    flex: 1.2,
+    flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: theme.colors.primary600,
+    paddingVertical: 12,
+    borderRadius: theme.radii.lg,
+    ...theme.shadows.sm,
+  },
+  primaryActionText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  secondaryActionBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingVertical: 12,
+    borderRadius: theme.radii.lg,
+    ...theme.shadows.sm,
+  },
+  secondaryActionText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
+  },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+    letterSpacing: -0.3,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 1,
+  },
+  viewAllText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: theme.colors.primary600,
+  },
+  allCaughtUpCard: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.xl,
+    padding: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    ...theme.shadows.sm,
+  },
+  caughtUpIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.successLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  caughtUpTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
+  },
+  caughtUpDesc: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textAlign: "center",
+  },
+  tasksList: {
+    gap: 10,
+  },
+  compactTaskCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.lg,
+    padding: 12,
+    gap: 10,
+    ...theme.shadows.sm,
+  },
+  checkboxBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxBtnDone: {
+    backgroundColor: theme.colors.success,
+    borderColor: theme.colors.success,
+  },
+  compactTaskMeta: {
+    flex: 1,
+    gap: 4,
+  },
+  compactTaskTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
+  },
+  compactTaskTitleDone: {
+    textDecorationLine: "line-through",
+    color: theme.colors.textMuted,
+  },
+  compactTaskSubRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  priorityBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.successLight,
+  },
+  priorityBadgeHigh: {
+    backgroundColor: theme.colors.dangerLight,
+  },
+  priorityBadgeMed: {
+    backgroundColor: theme.colors.warningLight,
+  },
+  priorityBadgeText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: theme.colors.success,
+  },
+  priorityBadgeTextHigh: {
+    color: theme.colors.danger,
+  },
+  priorityBadgeTextMed: {
+    color: theme.colors.warning,
+  },
+  compactDueDateText: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  compactEditBtn: {
+    padding: 6,
   },
 });

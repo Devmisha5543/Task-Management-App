@@ -1,17 +1,28 @@
 {
   "expo": {
-    "name": "Task Management App",
-    "slug": "task-management-app",
+    "name": "TaskFlow",
+    "slug": "taskflow-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wamisha.taskflow"
     },
-    "android": {},
+    "android": {
+      "package": "com.wamisha.taskflow",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
     "plugins": [
       "expo-asset",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b80fd905-08bd-4661-b3af-06ec3ed1f275"
+      }
+    }
   }
 }

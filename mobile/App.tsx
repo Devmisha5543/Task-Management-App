@@ -1,21 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ActivityIndicator, StyleSheet, TouchableOpacity, Text } from "react-native";
+import {
+  View,
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Modal,
+} from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { getAuthToken, mobileApiRequest, setAuthToken } from "./lib/api";
 import type { User } from "./types/auth";
 import AuthScreen from "./screens/AuthScreen";
 import HomeScreen from "./screens/HomeScreen";
+import MyTasksScreen from "./screens/MyTasksScreen";
 import SharedTasksScreen from "./screens/SharedTasksScreen";
 import CalendarScreen from "./screens/CalendarScreen";
+import SettingsScreen from "./screens/SettingsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import Icon from "./components/Icon";
+import { theme } from "./components/ui/theme";
 
-type TabType = "tasks" | "calendar" | "shared" | "profile";
+type TabType = "dashboard" | "tasks" | "shared" | "calendar" | "settings";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [currentTab, setCurrentTab] = useState<TabType>("tasks");
+  const [currentTab, setCurrentTab] = useState<TabType>("dashboard");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     const checkInitialAuth = async () => {
@@ -45,142 +57,205 @@ export default function App() {
 
   if (checkingAuth) {
     return (
-      <View style={styles.splash}>
-        <ActivityIndicator size="large" color="#111827" />
-        <StatusBar style="dark" />
-      </View>
+      <SafeAreaProvider>
+        <View style={styles.splash}>
+          <ActivityIndicator size="large" color={theme.colors.primary600} />
+          <StatusBar style="dark" />
+        </View>
+      </SafeAreaProvider>
     );
   }
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <StatusBar style="dark" />
-        <AuthScreen onLoginSuccess={(u) => setUser(u)} />
-      </View>
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <StatusBar style="dark" />
+          <AuthScreen onLoginSuccess={(u) => setUser(u)} />
+        </View>
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <StatusBar style="dark" />
 
-      {/* Screen Render */}
-      <View style={{ flex: 1 }}>
-        {currentTab === "tasks" && (
-          <HomeScreen
-            user={user}
-            onLogout={handleLogout}
-            onNavigateToProfile={() => setCurrentTab("profile")}
-          />
-        )}
-        {currentTab === "calendar" && (
-          <CalendarScreen
-            user={user}
-            onNavigateToProfile={() => setCurrentTab("profile")}
-          />
-        )}
-        {currentTab === "shared" && (
-          <SharedTasksScreen
-            user={user}
-            onNavigateToProfile={() => setCurrentTab("profile")}
-          />
-        )}
-        {currentTab === "profile" && (
+        {/* Screen Render */}
+        <View style={{ flex: 1 }}>
+          {currentTab === "dashboard" && (
+            <HomeScreen
+              user={user}
+              onLogout={handleLogout}
+              onNavigateToProfile={() => setIsProfileOpen(true)}
+              onNavigateToTasks={() => setCurrentTab("tasks")}
+              onNavigateToShared={() => setCurrentTab("shared")}
+              onNavigateToCalendar={() => setCurrentTab("calendar")}
+              onNavigateToSettings={() => setCurrentTab("settings")}
+            />
+          )}
+
+          {currentTab === "tasks" && (
+            <MyTasksScreen
+              user={user}
+              onNavigateToProfile={() => setIsProfileOpen(true)}
+            />
+          )}
+
+          {currentTab === "shared" && (
+            <SharedTasksScreen
+              user={user}
+              onNavigateToProfile={() => setIsProfileOpen(true)}
+            />
+          )}
+
+          {currentTab === "calendar" && (
+            <CalendarScreen
+              user={user}
+              onNavigateToProfile={() => setIsProfileOpen(true)}
+            />
+          )}
+
+          {currentTab === "settings" && (
+            <SettingsScreen
+              user={user}
+              onLogout={handleLogout}
+              onNavigateToProfile={() => setIsProfileOpen(true)}
+            />
+          )}
+        </View>
+
+        {/* Mobile Bottom Navigation Bar */}
+        <View style={styles.bottomBar}>
+          {/* 1. Dashboard */}
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setCurrentTab("dashboard")}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name="grid-outline"
+              size={18}
+              color={currentTab === "dashboard" ? theme.colors.primary600 : "#94A3B8"}
+            />
+            <Text
+              style={[
+                styles.navText,
+                currentTab === "dashboard" && styles.navTextActive,
+              ]}
+            >
+              Dashboard
+            </Text>
+          </TouchableOpacity>
+
+          {/* 2. My Tasks */}
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setCurrentTab("tasks")}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name="list-outline"
+              size={18}
+              color={currentTab === "tasks" ? theme.colors.primary600 : "#94A3B8"}
+            />
+            <Text
+              style={[
+                styles.navText,
+                currentTab === "tasks" && styles.navTextActive,
+              ]}
+            >
+              My Tasks
+            </Text>
+          </TouchableOpacity>
+
+          {/* 3. Shared */}
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setCurrentTab("shared")}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name="people-outline"
+              size={18}
+              color={currentTab === "shared" ? theme.colors.primary600 : "#94A3B8"}
+            />
+            <Text
+              style={[
+                styles.navText,
+                currentTab === "shared" && styles.navTextActive,
+              ]}
+            >
+              Shared
+            </Text>
+          </TouchableOpacity>
+
+          {/* 4. Calendar */}
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setCurrentTab("calendar")}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name="calendar-outline"
+              size={18}
+              color={currentTab === "calendar" ? theme.colors.primary600 : "#94A3B8"}
+            />
+            <Text
+              style={[
+                styles.navText,
+                currentTab === "calendar" && styles.navTextActive,
+              ]}
+            >
+              Calendar
+            </Text>
+          </TouchableOpacity>
+
+          {/* 5. Settings */}
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => setCurrentTab("settings")}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name="create-outline"
+              size={18}
+              color={currentTab === "settings" ? theme.colors.primary600 : "#94A3B8"}
+            />
+            <Text
+              style={[
+                styles.navText,
+                currentTab === "settings" && styles.navTextActive,
+              ]}
+            >
+              Settings
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Profile Modal */}
+        <Modal
+          visible={isProfileOpen}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setIsProfileOpen(false)}
+        >
           <ProfileScreen
             user={user}
             onUserUpdated={(updatedUser) => setUser(updatedUser)}
             onLogout={handleLogout}
           />
-        )}
+        </Modal>
       </View>
-
-      {/* Mobile Bottom Navigation Bar */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setCurrentTab("tasks")}
-        >
-          <Icon
-            name="list-outline"
-            size={20}
-            color={currentTab === "tasks" ? "#111827" : "#9CA3AF"}
-          />
-          <Text
-            style={[
-              styles.navText,
-              currentTab === "tasks" && styles.navTextActive,
-            ]}
-          >
-            All Tasks
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setCurrentTab("calendar")}
-        >
-          <Icon
-            name="calendar-outline"
-            size={20}
-            color={currentTab === "calendar" ? "#111827" : "#9CA3AF"}
-          />
-          <Text
-            style={[
-              styles.navText,
-              currentTab === "calendar" && styles.navTextActive,
-            ]}
-          >
-            Calendar
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setCurrentTab("shared")}
-        >
-          <Icon
-            name="people-outline"
-            size={20}
-            color={currentTab === "shared" ? "#111827" : "#9CA3AF"}
-          />
-          <Text
-            style={[
-              styles.navText,
-              currentTab === "shared" && styles.navTextActive,
-            ]}
-          >
-            Shared
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setCurrentTab("profile")}
-        >
-          <Icon
-            name="create-outline"
-            size={20}
-            color={currentTab === "profile" ? "#111827" : "#9CA3AF"}
-          />
-          <Text
-            style={[
-              styles.navText,
-              currentTab === "profile" && styles.navTextActive,
-            ]}
-          >
-            Profile
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: theme.colors.background,
   },
   splash: {
     flex: 1,
@@ -190,27 +265,27 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     flexDirection: "row",
-    height: 60,
-    backgroundColor: "#FFFFFF",
+    height: 64,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-    alignItems: "center",
-    justifyContent: "space-around",
-    paddingBottom: 4,
+    borderTopColor: theme.colors.border,
+    paddingBottom: 8,
+    paddingTop: 6,
+    ...theme.shadows.md,
   },
   navItem: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 2,
-    flex: 1,
+    gap: 3,
   },
   navText: {
     fontSize: 10,
     fontWeight: "600",
-    color: "#9CA3AF",
+    color: "#94A3B8",
   },
   navTextActive: {
-    color: "#111827",
+    color: theme.colors.primary600,
     fontWeight: "800",
   },
 });

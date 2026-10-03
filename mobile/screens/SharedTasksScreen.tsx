@@ -7,9 +7,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { getTasks, updateTask, deleteTask } from "../lib/taskApi";
 import type { CreateTaskData, Task } from "../types/task";
 import type { User } from "../types/auth";

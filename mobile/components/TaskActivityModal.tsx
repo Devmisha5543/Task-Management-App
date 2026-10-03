@@ -15,15 +15,18 @@ import type { Task, ActivityLog } from "../types/task";
 
 interface TaskActivityModalProps {
   task: Task | null;
-  visible: boolean;
+  visible?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
 }
 
 export default function TaskActivityModal({
   task,
   visible,
+  isOpen,
   onClose,
 }: TaskActivityModalProps) {
+  const isModalVisible = Boolean((visible ?? isOpen ?? (task !== null)) && task !== null);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -207,7 +210,7 @@ export default function TaskActivityModal({
 
   return (
     <Modal
-      visible={visible}
+      visible={isModalVisible}
       transparent
       animationType="slide"
       onRequestClose={onClose}

@@ -64,6 +64,7 @@ export default function DashboardLayout({
     { href: "/dashboard/shared", label: "Shared Tasks", icon: "users" as const },
     { href: "/dashboard/calendar", label: "Calendar & Timeline", icon: "calendar" as const },
     { href: "/dashboard/analytics", label: "Analytics", icon: "chart" as const },
+    { href: "/dashboard/mobile", label: "Mobile App", icon: "smartphone" as const },
     { href: "/dashboard/profile", label: "Profile", icon: "user" as const },
     { href: "/dashboard/settings", label: "Settings", icon: "settings" as const },
   ];

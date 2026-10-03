@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { mobileApiRequest, setAuthToken } from "../lib/api";
 import type { User } from "../types/auth";
 import Icon from "../components/Icon";

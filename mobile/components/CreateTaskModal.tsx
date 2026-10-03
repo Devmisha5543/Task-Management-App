@@ -12,21 +12,29 @@ import {
   Platform,
 } from "react-native";
 import Icon from "./Icon";
+import { createTask } from "../lib/taskApi";
 import type { CreateTaskData, Task } from "../types/task";
 
 interface CreateTaskModalProps {
-  visible: boolean;
+  visible?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateTaskData) => Promise<void>;
+  onSubmit?: (data: CreateTaskData) => Promise<void>;
+  onCreate?: (data: CreateTaskData) => Promise<void>;
+  onCreated?: (task: Task) => void;
   availableTasks?: Task[];
 }
 
 export default function CreateTaskModal({
   visible,
+  isOpen,
   onClose,
   onSubmit,
+  onCreate,
+  onCreated,
   availableTasks = [],
 }: CreateTaskModalProps) {
+  const isModalVisible = Boolean(visible ?? isOpen);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
@@ -65,7 +73,8 @@ export default function CreateTaskModal({
         .map((l) => l.trim())
         .filter(Boolean);
 
-      await onSubmit({
+      const submitHandler = onSubmit || onCreate;
+      const payload: CreateTaskData = {
         title: title.trim(),
         description: description.trim() || undefined,
         status,
@@ -76,7 +85,14 @@ export default function CreateTaskModal({
         isRecurring: recurrence !== "none",
         recurrence,
         dependencies: selectedDependencies.length > 0 ? selectedDependencies : undefined,
-      });
+      };
+
+      if (submitHandler) {
+        await submitHandler(payload);
+      } else if (onCreated) {
+        const created = await createTask(payload);
+        onCreated(created);
+      }
 
       setTitle("");
       setDescription("");
@@ -101,7 +117,12 @@ export default function CreateTaskModal({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal
+      visible={isModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.overlay}
