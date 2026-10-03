@@ -23,7 +23,14 @@ export type WebIconName =
   | "comment"
   | "history"
   | "calendar"
-  | "send";
+  | "send"
+  | "chevron-left"
+  | "chevron-right"
+  | "clock"
+  | "alert-circle"
+  | "timeline"
+  | "check-circle"
+  | "sparkles";
 
 interface WebIconProps {
   name: WebIconName;
@@ -82,6 +89,36 @@ export default function Icon({ name, className = "w-5 h-5", size }: WebIconProps
         return <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />;
       case "send":
         return <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />;
+      case "chevron-left":
+        return <path d="M15 19l-7-7 7-7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />;
+      case "chevron-right":
+        return <path d="M9 5l7 7-7 7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />;
+      case "clock":
+        return (
+          <>
+            <circle cx="12" cy="12" r="9" strokeWidth="2" />
+            <path d="M12 7v5l3 3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </>
+        );
+      case "alert-circle":
+        return (
+          <>
+            <circle cx="12" cy="12" r="9" strokeWidth="2" />
+            <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
+            <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2.5" strokeLinecap="round" />
+          </>
+        );
+      case "timeline":
+        return <path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4 3h6m-6 4h10m-10 4h4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />;
+      case "check-circle":
+        return (
+          <>
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <polyline points="22 4 12 14.01 9 11.01" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </>
+        );
+      case "sparkles":
+        return <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />;
       default:
         return null;
     }

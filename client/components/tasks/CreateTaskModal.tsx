@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { useTaskStore } from "@/store/taskStore";
@@ -9,11 +9,13 @@ import type { CreateTaskData } from "@/types/task";
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialDueDate?: string;
 }
 
 export default function CreateTaskModal({
   isOpen,
   onClose,
+  initialDueDate,
 }: CreateTaskModalProps) {
   const createTask = useTaskStore((state) => state.createTask);
 
@@ -27,6 +29,12 @@ export default function CreateTaskModal({
   const [subtaskInput, setSubtaskInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen && initialDueDate) {
+      setDueDate(initialDueDate);
+    }
+  }, [isOpen, initialDueDate]);
 
   const handleAddSubtask = (e?: React.MouseEvent | React.KeyboardEvent) => {
     if (e) e.preventDefault();

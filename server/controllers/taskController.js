@@ -4,6 +4,7 @@ const logActivity = require("../utils/activityLogger");
 
 const {
   createTaskSchema,
+  updateTaskSchema,
   subtaskInputSchema,
   updateSubtaskSchema
 } = require("../validations/taskValidation");
@@ -73,7 +74,7 @@ const getTasks = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const validatedData = createTaskSchema.parse(req.body);
+    const validatedData = updateTaskSchema.parse(req.body);
     if (validatedData.dueDate === "") {
       validatedData.dueDate = null;
     }

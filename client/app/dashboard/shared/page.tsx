@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
 import KanbanBoard from "@/components/tasks/KanbanBoard";
+import CalendarView from "@/components/tasks/CalendarView";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
 import TaskCard from "@/components/tasks/TaskCard";
@@ -29,7 +30,7 @@ export default function SharedTasksPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban" | "calendar">("grid");
 
   useEffect(() => {
     fetchTasks();
@@ -131,6 +132,13 @@ export default function SharedTasksPage() {
             When tasks have multiple collaborators or are shared with you, they will appear here.
           </p>
         </div>
+      ) : viewMode === "calendar" ? (
+        <CalendarView
+          tasks={sharedTasks}
+          onEdit={(t) => setEditingTask(t)}
+          onAttachments={(t) => setAttachmentTask(t)}
+          onComments={(t) => setCommentingTask(t)}
+        />
       ) : viewMode === "kanban" ? (
         <KanbanBoard
           tasks={sharedTasks}

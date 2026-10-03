@@ -9,8 +9,8 @@ interface TaskFiltersProps {
   onPriorityFilterChange: (value: string) => void;
   sortBy: string;
   onSortByChange: (value: string) => void;
-  viewMode: "grid" | "kanban";
-  onViewModeChange: (mode: "grid" | "kanban") => void;
+  viewMode: "grid" | "kanban" | "calendar";
+  onViewModeChange: (mode: "grid" | "kanban" | "calendar") => void;
 }
 
 export default function TaskFilters({
@@ -27,7 +27,6 @@ export default function TaskFilters({
 }: TaskFiltersProps) {
   return (
     <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      {/* Search Bar */}
       <div className="relative flex-1">
         <input
           type="text"
@@ -46,9 +45,7 @@ export default function TaskFilters({
         )}
       </div>
 
-      {/* Filter Selectors, Sort, & View Toggle */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Status Filter */}
         <select
           value={statusFilter}
           onChange={(e) => onStatusFilterChange(e.target.value)}
@@ -60,7 +57,6 @@ export default function TaskFilters({
           <option value="done">Done</option>
         </select>
 
-        {/* Priority Filter */}
         <select
           value={priorityFilter}
           onChange={(e) => onPriorityFilterChange(e.target.value)}
@@ -72,7 +68,6 @@ export default function TaskFilters({
           <option value="high">High Priority</option>
         </select>
 
-        {/* Sort By Selector */}
         <select
           value={sortBy}
           onChange={(e) => onSortByChange(e.target.value)}
@@ -86,29 +81,41 @@ export default function TaskFilters({
           <option value="title-asc">Title: A-Z</option>
         </select>
 
-        {/* View Mode Toggle Switch */}
         <div className="flex items-center rounded-xl border border-gray-300 bg-gray-100 p-1">
           <button
             type="button"
             onClick={() => onViewModeChange("grid")}
             className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
               viewMode === "grid"
-                ? "bg-white text-black shadow-2xs"
+                ? "bg-white text-black shadow-2xs font-bold"
                 : "text-gray-500 hover:text-black"
             }`}
           >
             ⊞ Grid
           </button>
+
           <button
             type="button"
             onClick={() => onViewModeChange("kanban")}
             className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
               viewMode === "kanban"
-                ? "bg-white text-black shadow-2xs"
+                ? "bg-white text-black shadow-2xs font-bold"
                 : "text-gray-500 hover:text-black"
             }`}
           >
             📋 Kanban
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onViewModeChange("calendar")}
+            className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
+              viewMode === "calendar"
+                ? "bg-white text-black shadow-2xs font-bold"
+                : "text-gray-500 hover:text-black"
+            }`}
+          >
+            📅 Calendar
           </button>
         </div>
       </div>

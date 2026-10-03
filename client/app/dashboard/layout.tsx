@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Button from "@/components/ui/Button";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { useAuthStore } from "@/store/authStore";
+import Icon from "@/components/ui/Icon";
 
 export default function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
   const logout = useAuthStore((state) => state.logout);
 
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = () => {
     logout();
@@ -46,30 +48,62 @@ export default function DashboardLayout({
               <nav className="px-4 space-y-1">
                 <Link
                   href="/dashboard"
-                  className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black transition"
+                  className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
+                    pathname === "/dashboard"
+                      ? "bg-black text-white font-semibold shadow-xs"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-black"
+                  }`}
                 >
-                  Dashboard
+                  <Icon name="grid" className="h-4 w-4" />
+                  <span>Dashboard</span>
                 </Link>
 
                 <Link
                   href="/dashboard/tasks"
-                  className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black transition"
+                  className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
+                    pathname === "/dashboard/tasks"
+                      ? "bg-black text-white font-semibold shadow-xs"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-black"
+                  }`}
                 >
-                  My Tasks
+                  <Icon name="clipboard" className="h-4 w-4" />
+                  <span>My Tasks</span>
                 </Link>
 
                 <Link
                   href="/dashboard/shared"
-                  className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black transition"
+                  className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
+                    pathname === "/dashboard/shared"
+                      ? "bg-black text-white font-semibold shadow-xs"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-black"
+                  }`}
                 >
-                  Shared Tasks
+                  <Icon name="users" className="h-4 w-4" />
+                  <span>Shared Tasks</span>
+                </Link>
+
+                <Link
+                  href="/dashboard/calendar"
+                  className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
+                    pathname === "/dashboard/calendar"
+                      ? "bg-black text-white font-semibold shadow-xs"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-black"
+                  }`}
+                >
+                  <Icon name="calendar" className="h-4 w-4" />
+                  <span>Calendar & Timeline</span>
                 </Link>
 
                 <Link
                   href="/dashboard/profile"
-                  className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-black transition"
+                  className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
+                    pathname === "/dashboard/profile"
+                      ? "bg-black text-white font-semibold shadow-xs"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-black"
+                  }`}
                 >
-                  Profile
+                  <Icon name="user" className="h-4 w-4" />
+                  <span>Profile</span>
                 </Link>
               </nav>
             </aside>

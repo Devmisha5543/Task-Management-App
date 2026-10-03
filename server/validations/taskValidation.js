@@ -41,6 +41,8 @@ const createTaskSchema = z.object({
     .optional()
 });
 
+const updateTaskSchema = createTaskSchema.partial();
+
 const subtaskInputSchema = z.object({
   title: z.string().min(1, "Subtask title is required").max(300)
 });
@@ -52,6 +54,7 @@ const updateSubtaskSchema = z.object({
 
 module.exports = {
   createTaskSchema,
+  updateTaskSchema,
   subtaskInputSchema,
   updateSubtaskSchema
 };

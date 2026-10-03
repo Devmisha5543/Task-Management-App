@@ -5,6 +5,7 @@ import Button from "@/components/ui/Button";
 import CreateTaskModal from "@/components/tasks/CreateTaskModal";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
 import KanbanBoard from "@/components/tasks/KanbanBoard";
+import CalendarView from "@/components/tasks/CalendarView";
 import ShareTaskModal from "@/components/tasks/ShareTaskModal";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
@@ -24,6 +25,7 @@ export default function MyTasksPage() {
   const fetchTasks = useTaskStore((state) => state.fetchTasks);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createInitialDate, setCreateInitialDate] = useState<string | undefined>(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [sharingTask, setSharingTask] = useState<Task | null>(null);
   const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
@@ -34,7 +36,7 @@ export default function MyTasksPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban" | "calendar">("grid");
 
   useEffect(() => {
     fetchTasks();
@@ -138,6 +140,18 @@ export default function MyTasksPage() {
             </Button>
           </div>
         </div>
+      ) : viewMode === "calendar" ? (
+        <CalendarView
+          tasks={personalTasks}
+          onEdit={(t) => setEditingTask(t)}
+          onCreateForDate={(dateStr) => {
+            setCreateInitialDate(dateStr);
+            setIsCreateOpen(true);
+          }}
+          onAttachments={(t) => setAttachmentTask(t)}
+          onComments={(t) => setCommentingTask(t)}
+          onActivity={(t) => setActivityTask(t)}
+        />
       ) : viewMode === "kanban" ? (
         <KanbanBoard
           tasks={personalTasks}
@@ -165,7 +179,11 @@ export default function MyTasksPage() {
 
       <CreateTaskModal
         isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        initialDueDate={createInitialDate}
+        onClose={() => {
+          setIsCreateOpen(false);
+          setCreateInitialDate(undefined);
+        }}
       />
 
       <EditTaskModal

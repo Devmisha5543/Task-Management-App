@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import CreateTaskModal from "@/components/tasks/CreateTaskModal";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
 import KanbanBoard from "@/components/tasks/KanbanBoard";
+import CalendarView from "@/components/tasks/CalendarView";
 import ShareTaskModal from "@/components/tasks/ShareTaskModal";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const fetchTasks = useTaskStore((state) => state.fetchTasks);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createInitialDate, setCreateInitialDate] = useState<string | undefined>(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [sharingTask, setSharingTask] = useState<Task | null>(null);
   const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
@@ -35,7 +37,7 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban" | "calendar">("grid");
 
   useEffect(() => {
     fetchTasks();
@@ -57,7 +59,6 @@ export default function DashboardPage() {
       return matchesSearch && matchesStatus && matchesPriority;
     });
 
-    // Sorting Logic
     result = [...result].sort((a, b) => {
       if (sortBy === "oldest") {
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -81,7 +82,6 @@ export default function DashboardPage() {
         if (!b.dueDate) return -1;
         return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
       }
-      // Default: newest
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
@@ -90,7 +90,6 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Top Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Your Tasks</h1>
@@ -104,17 +103,14 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {/* Error Banner */}
       {error && (
         <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 border border-red-200">
           {error}
         </div>
       )}
 
-      {/* Dashboard Stats Summary Bar */}
       <TaskStats tasks={tasks} />
 
-      {/* Filters, Search Bar, Sort & View Mode Switcher */}
       <TaskFilters
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -128,7 +124,6 @@ export default function DashboardPage() {
         onViewModeChange={setViewMode}
       />
 
-      {/* Main Task View (Grid vs Kanban) */}
       {loading ? (
         <div className="flex justify-center rounded-2xl border border-gray-200 bg-white p-12 text-gray-500 shadow-xs">
           <div className="flex items-center gap-3">
@@ -167,6 +162,18 @@ export default function DashboardPage() {
             Reset Filters
           </button>
         </div>
+      ) : viewMode === "calendar" ? (
+        <CalendarView
+          tasks={filteredTasks}
+          onEdit={(t) => setEditingTask(t)}
+          onCreateForDate={(dateStr) => {
+            setCreateInitialDate(dateStr);
+            setIsCreateOpen(true);
+          }}
+          onAttachments={(t) => setAttachmentTask(t)}
+          onComments={(t) => setCommentingTask(t)}
+          onActivity={(t) => setActivityTask(t)}
+        />
       ) : viewMode === "kanban" ? (
         <KanbanBoard
           tasks={filteredTasks}
@@ -192,10 +199,13 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Modals */}
       <CreateTaskModal
         isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        initialDueDate={createInitialDate}
+        onClose={() => {
+          setIsCreateOpen(false);
+          setCreateInitialDate(undefined);
+        }}
       />
 
       <EditTaskModal

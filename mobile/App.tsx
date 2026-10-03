@@ -6,10 +6,11 @@ import type { User } from "./types/auth";
 import AuthScreen from "./screens/AuthScreen";
 import HomeScreen from "./screens/HomeScreen";
 import SharedTasksScreen from "./screens/SharedTasksScreen";
+import CalendarScreen from "./screens/CalendarScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import Icon from "./components/Icon";
 
-type TabType = "tasks" | "shared" | "profile";
+type TabType = "tasks" | "calendar" | "shared" | "profile";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -73,6 +74,12 @@ export default function App() {
             onNavigateToProfile={() => setCurrentTab("profile")}
           />
         )}
+        {currentTab === "calendar" && (
+          <CalendarScreen
+            user={user}
+            onNavigateToProfile={() => setCurrentTab("profile")}
+          />
+        )}
         {currentTab === "shared" && (
           <SharedTasksScreen
             user={user}
@@ -106,6 +113,25 @@ export default function App() {
             ]}
           >
             All Tasks
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => setCurrentTab("calendar")}
+        >
+          <Icon
+            name="calendar-outline"
+            size={20}
+            color={currentTab === "calendar" ? "#111827" : "#9CA3AF"}
+          />
+          <Text
+            style={[
+              styles.navText,
+              currentTab === "calendar" && styles.navTextActive,
+            ]}
+          >
+            Calendar
           </Text>
         </TouchableOpacity>
 
