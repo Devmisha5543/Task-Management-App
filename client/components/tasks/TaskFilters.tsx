@@ -33,12 +33,12 @@ export default function TaskFilters({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search tasks by title or description..."
-          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm focus:border-black focus:outline-none"
+          className="w-full rounded-xl border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2 text-sm text-gray-900 dark:text-zinc-100 focus:border-black dark:focus:border-white focus:outline-none transition-colors"
         />
         {searchQuery && (
           <button
             onClick={() => onSearchChange("")}
-            className="absolute right-3 top-2.5 text-xs text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-2.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300"
           >
             Clear
           </button>
@@ -49,7 +49,7 @@ export default function TaskFilters({
         <select
           value={statusFilter}
           onChange={(e) => onStatusFilterChange(e.target.value)}
-          className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none"
+          className="rounded-xl border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-zinc-100 focus:border-black dark:focus:border-white focus:outline-none transition-colors"
         >
           <option value="all">All Statuses</option>
           <option value="todo">To Do</option>
@@ -60,7 +60,7 @@ export default function TaskFilters({
         <select
           value={priorityFilter}
           onChange={(e) => onPriorityFilterChange(e.target.value)}
-          className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none"
+          className="rounded-xl border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-zinc-100 focus:border-black dark:focus:border-white focus:outline-none transition-colors"
         >
           <option value="all">All Priorities</option>
           <option value="low">Low Priority</option>
@@ -71,7 +71,7 @@ export default function TaskFilters({
         <select
           value={sortBy}
           onChange={(e) => onSortByChange(e.target.value)}
-          className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none"
+          className="rounded-xl border border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-zinc-100 focus:border-black dark:focus:border-white focus:outline-none transition-colors"
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -81,14 +81,14 @@ export default function TaskFilters({
           <option value="title-asc">Title: A-Z</option>
         </select>
 
-        <div className="flex items-center rounded-xl border border-gray-300 bg-gray-100 p-1">
+        <div className="flex items-center rounded-xl border border-gray-300 dark:border-zinc-800 bg-gray-100 dark:bg-zinc-800 p-1">
           <button
             type="button"
             onClick={() => onViewModeChange("grid")}
             className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
               viewMode === "grid"
-                ? "bg-white text-black shadow-2xs font-bold"
-                : "text-gray-500 hover:text-black"
+                ? "bg-white dark:bg-zinc-900 text-black dark:text-white shadow-2xs font-bold"
+                : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
             }`}
           >
             ⊞ Grid
@@ -99,11 +99,11 @@ export default function TaskFilters({
             onClick={() => onViewModeChange("kanban")}
             className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
               viewMode === "kanban"
-                ? "bg-white text-black shadow-2xs font-bold"
-                : "text-gray-500 hover:text-black"
+                ? "bg-white dark:bg-zinc-900 text-black dark:text-white shadow-2xs font-bold"
+                : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
             }`}
           >
-            📋 Kanban
+            ▥ Kanban
           </button>
 
           <button
@@ -111,11 +111,11 @@ export default function TaskFilters({
             onClick={() => onViewModeChange("calendar")}
             className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
               viewMode === "calendar"
-                ? "bg-white text-black shadow-2xs font-bold"
-                : "text-gray-500 hover:text-black"
+                ? "bg-white dark:bg-zinc-900 text-black dark:text-white shadow-2xs font-bold"
+                : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
             }`}
           >
-            📅 Calendar
+            ▦ Calendar
           </button>
         </div>
       </div>

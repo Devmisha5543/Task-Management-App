@@ -114,40 +114,40 @@ export default function TaskAttachmentsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-6 shadow-xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b pb-4">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-4">
           <div className="flex items-center gap-2">
-            <Icon name="attachment" className="w-5 h-5 text-gray-700" />
+            <Icon name="attachment" className="w-5 h-5 text-gray-700 dark:text-zinc-300" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Task Attachments</h2>
-              <p className="text-xs text-gray-500 truncate max-w-xs">{task.title}</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Task Attachments</h2>
+              <p className="text-xs text-gray-500 dark:text-zinc-400 truncate max-w-xs">{task.title}</p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
           >
             <Icon name="close" className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
+          <div className="mt-4 rounded-lg bg-red-50 dark:bg-rose-950/40 p-3 text-sm text-red-600 dark:text-rose-300 border border-red-200 dark:border-rose-900/60">
             {error}
           </div>
         )}
 
         {/* File Upload Box */}
-        <div className="mt-4 rounded-xl border-2 border-dashed border-gray-300 p-5 text-center hover:border-black transition">
+        <div className="mt-4 rounded-xl border-2 border-dashed border-gray-300 dark:border-zinc-700 p-5 text-center hover:border-black dark:hover:border-zinc-500 transition">
           <label className="cursor-pointer flex flex-col items-center gap-1.5">
-            <Icon name="cloud-upload" className="w-8 h-8 text-blue-600 mb-1" />
-            <span className="text-sm font-semibold text-gray-900">
+            <Icon name="cloud-upload" className="w-8 h-8 text-blue-600 dark:text-blue-400 mb-1" />
+            <span className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
               {uploading ? "Uploading to Cloudinary..." : "Click to select a file to upload"}
             </span>
-            <span className="text-xs text-gray-500">Images, PDFs, documents up to 10MB</span>
+            <span className="text-xs text-gray-500 dark:text-zinc-400">Images, PDFs, documents up to 10MB</span>
             <input
               type="file"
               disabled={uploading}
@@ -158,21 +158,21 @@ export default function TaskAttachmentsModal({
         </div>
 
         {/* Attachments List */}
-        <div className="mt-6 border-t pt-4">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+        <div className="mt-6 border-t border-gray-100 dark:border-zinc-800 pt-4">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-3">
             Attached Files ({attachments.length})
           </h3>
 
           {loading ? (
-            <div className="py-6 text-center text-xs text-gray-500">
+            <div className="py-6 text-center text-xs text-gray-500 dark:text-zinc-400">
               Loading attachments...
             </div>
           ) : attachments.length === 0 ? (
-            <div className="py-6 text-center text-xs text-gray-500 italic">
+            <div className="py-6 text-center text-xs text-gray-500 dark:text-zinc-400 italic">
               No files attached to this task yet.
             </div>
           ) : (
-            <div className="divide-y max-h-60 overflow-y-auto pr-1">
+            <div className="divide-y divide-gray-100 dark:divide-zinc-800 max-h-60 overflow-y-auto pr-1">
               {attachments.map((att) => {
                 const rawUrl = att.url || (att as unknown as { fileUrl?: string }).fileUrl;
                 const viewerUrl = getViewerUrl(rawUrl, att.filename);
@@ -187,7 +187,7 @@ export default function TaskAttachmentsModal({
                     className="flex items-center justify-between py-3 gap-2"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 rounded-lg bg-blue-50 text-blue-600 flex-shrink-0">
+                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex-shrink-0">
                         <Icon name="file" className="w-5 h-5" />
                       </div>
                       <div className="min-w-0">
@@ -195,11 +195,11 @@ export default function TaskAttachmentsModal({
                           href={viewerUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block truncate text-sm font-semibold text-gray-900 hover:text-blue-600 hover:underline"
+                          className="block truncate text-sm font-semibold text-gray-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
                         >
                           {att.filename}
                         </a>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-zinc-400">
                           {formatFileSize(att.size)} • Uploaded by {uploaderName}
                         </p>
                       </div>
@@ -211,7 +211,7 @@ export default function TaskAttachmentsModal({
                           href={viewerUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition"
+                          className="rounded-lg border border-gray-200 dark:border-zinc-700 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 hover:border-gray-300 dark:hover:border-zinc-600 transition"
                         >
                           Open Link
                         </a>
@@ -220,13 +220,13 @@ export default function TaskAttachmentsModal({
                       <button
                         onClick={() => handleDelete(att._id)}
                         disabled={deletingId === att._id}
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition disabled:opacity-50"
+                        className="rounded-lg p-1.5 text-gray-400 dark:text-zinc-500 hover:bg-red-50 dark:hover:bg-rose-950/40 hover:text-red-600 dark:hover:text-rose-400 transition disabled:opacity-50"
                         title="Delete Attachment"
                       >
                         {deletingId === att._id ? (
                           <span className="text-xs">...</span>
                         ) : (
-                          <Icon name="trash" className="w-4 h-4 text-red-500" />
+                          <Icon name="trash" className="w-4 h-4 text-red-500 dark:text-rose-400" />
                         )}
                       </button>
                     </div>
@@ -237,7 +237,7 @@ export default function TaskAttachmentsModal({
           )}
         </div>
 
-        <div className="mt-6 flex justify-end border-t pt-4">
+        <div className="mt-6 flex justify-end border-t border-gray-100 dark:border-zinc-800 pt-4">
           <Button onClick={onClose}>Done</Button>
         </div>
       </div>

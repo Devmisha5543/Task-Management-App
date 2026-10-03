@@ -108,28 +108,28 @@ export default function TaskCommentsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-6 shadow-xl flex flex-col max-h-[85vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b pb-4">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-4">
           <div className="flex items-center gap-2">
-            <Icon name="comment" className="w-5 h-5 text-gray-700" />
+            <Icon name="comment" className="w-5 h-5 text-gray-700 dark:text-zinc-300" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Discussion & Notes</h2>
-              <p className="text-xs text-gray-500 truncate max-w-xs">{task.title}</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Discussion & Notes</h2>
+              <p className="text-xs text-gray-500 dark:text-zinc-400 truncate max-w-xs">{task.title}</p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
           >
             <Icon name="close" className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
+          <div className="mt-3 rounded-lg bg-red-50 dark:bg-rose-950/40 p-3 text-sm text-red-600 dark:text-rose-300 border border-red-200 dark:border-rose-900/60">
             {error}
           </div>
         )}
@@ -137,12 +137,12 @@ export default function TaskCommentsModal({
         {/* Comments List */}
         <div className="flex-1 overflow-y-auto my-4 pr-1 space-y-4 min-h-[160px]">
           {loading ? (
-            <div className="py-8 text-center text-xs text-gray-500">
+            <div className="py-8 text-center text-xs text-gray-500 dark:text-zinc-400">
               Loading discussion thread...
             </div>
           ) : comments.length === 0 ? (
-            <div className="py-8 text-center text-xs text-gray-500 italic flex flex-col items-center gap-2">
-              <Icon name="comment" className="w-8 h-8 text-gray-300" />
+            <div className="py-8 text-center text-xs text-gray-500 dark:text-zinc-400 italic flex flex-col items-center gap-2">
+              <Icon name="comment" className="w-8 h-8 text-gray-300 dark:text-zinc-600" />
               No comments yet. Start the conversation below!
             </div>
           ) : (
@@ -156,7 +156,7 @@ export default function TaskCommentsModal({
                     <img
                       src={avatar}
                       alt={username}
-                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-zinc-700"
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-semibold flex items-center justify-center text-xs shadow-sm">
@@ -164,26 +164,26 @@ export default function TaskCommentsModal({
                     </div>
                   )}
 
-                  <div className="flex-1 bg-gray-50 rounded-2xl p-3 border border-gray-100 text-sm">
+                  <div className="flex-1 bg-gray-50 dark:bg-zinc-800/70 rounded-2xl p-3 border border-gray-100 dark:border-zinc-750 text-sm">
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="font-semibold text-gray-900 text-xs">
+                      <span className="font-semibold text-gray-900 dark:text-zinc-100 text-xs">
                         {username}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-gray-400 dark:text-zinc-500">
                           {formatDate(comment.createdAt)}
                         </span>
                         <button
                           onClick={() => handleDelete(comment._id)}
                           disabled={deletingId === comment._id}
-                          className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition"
+                          className="opacity-0 group-hover:opacity-100 text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-rose-400 transition"
                           title="Delete Comment"
                         >
                           <Icon name="trash" className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
-                    <p className="text-gray-700 whitespace-pre-wrap break-words">
+                    <p className="text-gray-700 dark:text-zinc-300 whitespace-pre-wrap break-words">
                       {comment.text}
                     </p>
                   </div>
@@ -194,14 +194,14 @@ export default function TaskCommentsModal({
         </div>
 
         {/* Comment Form */}
-        <form onSubmit={handleSubmit} className="border-t pt-4">
+        <form onSubmit={handleSubmit} className="border-t border-gray-100 dark:border-zinc-800 pt-4">
           <div className="flex gap-2 items-center">
             <input
               type="text"
               placeholder="Write a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
+              className="flex-1 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-4 py-2.5 text-sm outline-none focus:border-black dark:focus:border-zinc-500 focus:ring-1 focus:ring-black dark:focus:ring-zinc-500 transition placeholder-gray-400 dark:placeholder-zinc-500"
               disabled={submitting}
             />
             <Button type="submit" disabled={submitting || !newComment.trim()}>

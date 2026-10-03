@@ -86,16 +86,16 @@ export default function SharedTasksPage() {
   }, [tasks, currentUserId, searchQuery, statusFilter, priorityFilter, sortBy]);
 
   return (
-    <div>
+    <div className="animate-in fade-in duration-200">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Shared Tasks</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Shared Tasks</h1>
+        <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400">
           Tasks shared with team members or assigned to you.
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 border border-red-200">
+        <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-950/40 p-4 text-sm font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60">
           {error}
         </div>
       )}
@@ -116,19 +116,19 @@ export default function SharedTasksPage() {
       />
 
       {loading ? (
-        <div className="flex justify-center rounded-2xl border border-gray-200 bg-white p-12 text-gray-500 shadow-xs">
+        <div className="flex justify-center rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-12 text-gray-500 dark:text-zinc-400 shadow-xs">
           <div className="flex items-center gap-3">
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black dark:border-white border-t-transparent"></span>
             Loading shared tasks...
           </div>
         </div>
       ) : sharedTasks.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700">
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-12 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300">
             <Icon name="users" className="w-6 h-6" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">No shared tasks yet</h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No shared tasks yet</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
             When tasks have multiple collaborators or are shared with you, they will appear here.
           </p>
         </div>

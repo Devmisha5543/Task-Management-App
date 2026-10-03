@@ -62,22 +62,22 @@ export default function TaskCard({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "done":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+        return "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60";
       case "in-progress":
-        return "bg-amber-100 text-amber-800 border-amber-200";
+        return "bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700";
     }
   };
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-rose-100 text-rose-700 border-rose-200";
+        return "bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60";
       case "medium":
-        return "bg-orange-100 text-orange-700 border-orange-200";
+        return "bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800/60";
       default:
-        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+        return "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60";
     }
   };
 
@@ -95,7 +95,7 @@ export default function TaskCard({
     if (isDone) {
       return {
         text: `Due ${dateFormatted}`,
-        badgeClass: "bg-gray-100 text-gray-500 border-gray-200",
+        badgeClass: "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border-gray-200 dark:border-zinc-700",
       };
     }
 
@@ -103,30 +103,30 @@ export default function TaskCard({
       const daysOverdue = Math.abs(diffDays);
       return {
         text: `${daysOverdue}d overdue (${dateFormatted})`,
-        badgeClass: "bg-red-100 text-red-700 border-red-200 font-semibold",
+        badgeClass: "bg-red-100 dark:bg-rose-950/50 text-red-700 dark:text-rose-300 border-red-200 dark:border-rose-800/60 font-semibold",
       };
     }
     if (diffDays === 0) {
       return {
         text: "Due Today",
-        badgeClass: "bg-amber-100 text-amber-800 border-amber-300 font-semibold",
+        badgeClass: "bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700/60 font-semibold",
       };
     }
     if (diffDays === 1) {
       return {
         text: "Due Tomorrow",
-        badgeClass: "bg-amber-50 text-amber-700 border-amber-200 font-medium",
+        badgeClass: "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60 font-medium",
       };
     }
     if (diffDays <= 3) {
       return {
         text: `Due in ${diffDays} days (${dateFormatted})`,
-        badgeClass: "bg-blue-50 text-blue-700 border-blue-200 font-medium",
+        badgeClass: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60 font-medium",
       };
     }
     return {
       text: `Due ${dateFormatted}`,
-      badgeClass: "bg-gray-100 text-gray-600 border-gray-200",
+      badgeClass: "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border-gray-200 dark:border-zinc-700",
     };
   };
 
@@ -138,7 +138,7 @@ export default function TaskCard({
   const subtaskProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
 
   return (
-    <div className="group relative flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-gray-300 hover:shadow-md">
+    <div className="group relative flex flex-col justify-between rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm transition hover:border-gray-300 dark:hover:border-zinc-700 hover:shadow-md">
       <div>
         {/* Header Badges & Actions */}
         <div className="flex items-start justify-between gap-2">
@@ -174,7 +174,7 @@ export default function TaskCard({
 
             {task.isRecurring && task.recurrence && task.recurrence !== "none" && (
               <span
-                className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 capitalize"
+                className="inline-flex items-center gap-1 rounded-full border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300 capitalize"
                 title={`Recurring (${task.recurrence}): Next cycle will auto-spawn upon completion.`}
               >
                 <Icon name="repeat" className="w-3 h-3" />
@@ -193,7 +193,7 @@ export default function TaskCard({
 
               return isBlocked ? (
                 <span
-                  className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700"
+                  className="inline-flex items-center gap-1 rounded-full border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 text-xs font-semibold text-rose-700 dark:text-rose-300"
                   title={`Blocked by ${incompleteDeps.length} task(s): ${incompleteDeps.map((d) => d.title).join(", ")}`}
                 >
                   <Icon name="link" className="w-3 h-3" />
@@ -201,7 +201,7 @@ export default function TaskCard({
                 </span>
               ) : (
                 <span
-                  className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300"
                   title="All prerequisite dependencies are completed"
                 >
                   <Icon name="link" className="w-3 h-3" />
@@ -215,7 +215,7 @@ export default function TaskCard({
             {onComments && (
               <button
                 onClick={() => onComments(task)}
-                className="relative rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="relative rounded p-1.5 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
                 title="Task Discussion / Comments"
               >
                 <Icon name="comment" className="w-4 h-4" />
@@ -230,7 +230,7 @@ export default function TaskCard({
             {onAttachments && (
               <button
                 onClick={() => onAttachments(task)}
-                className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded p-1.5 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
                 title="Attachments"
               >
                 <Icon name="attachment" className="w-4 h-4" />
@@ -240,7 +240,7 @@ export default function TaskCard({
             {onShare && (
               <button
                 onClick={() => onShare(task)}
-                className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded p-1.5 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
                 title="Share Task / Manage Members"
               >
                 <Icon name="share" className="w-4 h-4" />
@@ -250,7 +250,7 @@ export default function TaskCard({
             {onActivity && (
               <button
                 onClick={() => onActivity(task)}
-                className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded p-1.5 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
                 title="Activity Log / History"
               >
                 <Icon name="history" className="w-4 h-4" />
@@ -259,7 +259,7 @@ export default function TaskCard({
 
             <button
               onClick={() => onEdit(task)}
-              className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              className="rounded p-1.5 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
               title="Edit Task"
             >
               <Icon name="edit" className="w-4 h-4" />
@@ -267,30 +267,30 @@ export default function TaskCard({
 
             <button
               onClick={() => setShowConfirmDelete(true)}
-              className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+              className="rounded p-1.5 text-gray-400 dark:text-zinc-500 hover:bg-red-50 dark:hover:bg-rose-950/40 hover:text-red-600 dark:hover:text-rose-400 transition"
               title="Delete Task"
             >
-              <Icon name="trash" className="w-4 h-4 text-red-500" />
+              <Icon name="trash" className="w-4 h-4 text-red-500 dark:text-rose-400" />
             </button>
           </div>
         </div>
 
         {/* Action / Blocker Error Banner */}
         {actionError && (
-          <div className="mt-2.5 rounded-lg bg-rose-50 border border-rose-200 p-2 text-xs font-semibold text-rose-700 flex items-center gap-1.5">
-            <Icon name="alert-circle" className="h-4 w-4 shrink-0 text-rose-600" />
+          <div className="mt-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-2 text-xs font-semibold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
+            <Icon name="alert-circle" className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
             <span>{actionError}</span>
           </div>
         )}
 
         {/* Task Title */}
-        <h3 className="mt-3 font-semibold text-gray-900 group-hover:text-black">
+        <h3 className="mt-3 font-semibold text-gray-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white transition">
           {task.title}
         </h3>
 
         {/* Task Description */}
         {task.description && (
-          <p className="mt-1 line-clamp-3 text-sm text-gray-600">
+          <p className="mt-1 line-clamp-3 text-sm text-gray-600 dark:text-zinc-400">
             {task.description}
           </p>
         )}
@@ -302,7 +302,7 @@ export default function TaskCard({
               {task.labels.map((label, idx) => (
                 <span
                   key={idx}
-                  className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600"
+                  className="rounded-md bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-zinc-300"
                 >
                   #{label}
                 </span>
@@ -313,7 +313,7 @@ export default function TaskCard({
           )}
 
           {memberCount > 1 && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/50">
               <Icon name="users" className="w-3 h-3" />
               {memberCount} members
             </span>
@@ -322,33 +322,33 @@ export default function TaskCard({
 
         {/* Subtasks / Checklist Section */}
         {totalSubtasks > 0 && (
-          <div className="mt-3.5 rounded-lg border border-gray-100 bg-gray-50/80 p-2.5">
+          <div className="mt-3.5 rounded-lg border border-gray-100 dark:border-zinc-800 bg-gray-50/80 dark:bg-zinc-800/40 p-2.5">
             <div className="flex items-center justify-between text-xs">
               <button
                 type="button"
                 onClick={() => setShowSubtasks(!showSubtasks)}
-                className="flex items-center gap-1.5 font-medium text-gray-700 hover:text-black transition"
+                className="flex items-center gap-1.5 font-medium text-gray-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition"
               >
                 <Icon
                   name="check"
                   className={`w-3.5 h-3.5 ${
                     completedSubtasks === totalSubtasks
-                      ? "text-emerald-600"
-                      : "text-blue-600"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-blue-600 dark:text-blue-400"
                   }`}
                 />
                 <span>
                   Checklist ({completedSubtasks}/{totalSubtasks})
                 </span>
-                <span className="text-[10px] text-gray-400">
+                <span className="text-[10px] text-gray-400 dark:text-zinc-500">
                   {showSubtasks ? "▲" : "▼"}
                 </span>
               </button>
               <span
                 className={`text-xs font-semibold ${
                   completedSubtasks === totalSubtasks
-                    ? "text-emerald-600"
-                    : "text-gray-600"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-gray-600 dark:text-zinc-400"
                 }`}
               >
                 {subtaskProgress}%
@@ -356,7 +356,7 @@ export default function TaskCard({
             </div>
 
             {/* Progress Bar */}
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-700">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
                   subtaskProgress === 100 ? "bg-emerald-500" : "bg-blue-600"
@@ -367,7 +367,7 @@ export default function TaskCard({
 
             {/* Expandable subtasks quick-checklist */}
             {showSubtasks && (
-              <div className="mt-2.5 space-y-1.5 border-t border-gray-200/60 pt-2">
+              <div className="mt-2.5 space-y-1.5 border-t border-gray-200/60 dark:border-zinc-700/60 pt-2">
                 {task.subtasks?.map((subtask) => (
                   <label
                     key={subtask._id || subtask.title}
@@ -382,13 +382,13 @@ export default function TaskCard({
                           toggleSubtask(task._id, subtask._id, e.target.checked);
                         }
                       }}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5 cursor-pointer"
+                      className="rounded border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5 cursor-pointer"
                     />
                     <span
                       className={`truncate transition ${
                         subtask.completed
-                          ? "line-through text-gray-400"
-                          : "text-gray-700 group-hover/sub:text-black"
+                          ? "line-through text-gray-400 dark:text-zinc-500"
+                          : "text-gray-700 dark:text-zinc-300 group-hover/sub:text-black dark:group-hover/sub:text-white"
                       }`}
                     >
                       {subtask.title}
@@ -402,7 +402,7 @@ export default function TaskCard({
       </div>
 
       {/* Footer / Quick Status Switcher */}
-      <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs text-gray-500">
+      <div className="mt-4 flex items-center justify-between border-t border-gray-100 dark:border-zinc-800/80 pt-3 text-xs text-gray-500 dark:text-zinc-400">
         <span>Status:</span>
         <select
           value={task.status}
@@ -411,7 +411,7 @@ export default function TaskCard({
               e.target.value as "todo" | "in-progress" | "done"
             )
           }
-          className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 focus:border-black focus:outline-none"
+          className="rounded border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 px-2 py-1 text-xs font-medium text-gray-700 dark:text-zinc-200 focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
         >
           <option value="todo">To Do</option>
           <option value="in-progress">In Progress</option>
@@ -421,17 +421,17 @@ export default function TaskCard({
 
       {/* Confirmation Modal for Delete */}
       {showConfirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-lg">
-            <h4 className="font-semibold text-gray-900">Delete Task?</h4>
-            <p className="mt-2 text-sm text-gray-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-5 shadow-lg">
+            <h4 className="font-semibold text-gray-900 dark:text-zinc-100">Delete Task?</h4>
+            <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400">
               Are you sure you want to delete &quot;{task.title}&quot;? This action cannot be undone.
             </p>
             <div className="mt-4 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowConfirmDelete(false)}
-                className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
               >
                 Cancel
               </button>
@@ -439,7 +439,7 @@ export default function TaskCard({
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>

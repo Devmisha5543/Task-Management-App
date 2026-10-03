@@ -94,8 +94,8 @@ export default function DashboardPage() {
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Your Tasks</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Your Tasks</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400">
             Manage your personal and collaborative tasks.
           </p>
         </div>
@@ -104,19 +104,23 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setIsAnalyticsOpen(true)}
-            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-800 shadow-2xs hover:bg-gray-50 hover:border-gray-300 transition"
+            className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm font-semibold text-gray-800 dark:text-zinc-200 shadow-2xs hover:bg-gray-50 dark:hover:bg-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 transition"
           >
-            <Icon name="chart" className="h-4 w-4 text-blue-600" />
+            <Icon name="chart" className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <span>Analytics & Export</span>
           </button>
-          <Button onClick={() => setIsCreateOpen(true)}>
-            + Create Task
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            className="flex items-center gap-1.5 shadow-sm"
+          >
+            <Icon name="plus" className="h-4 w-4" />
+            <span>Create Task</span>
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 border border-red-200">
+        <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-950/40 p-4 text-sm font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50">
           {error}
         </div>
       )}
@@ -137,19 +141,19 @@ export default function DashboardPage() {
       />
 
       {loading ? (
-        <div className="flex justify-center rounded-2xl border border-gray-200 bg-white p-12 text-gray-500 shadow-xs">
+        <div className="flex justify-center rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-12 text-gray-500 dark:text-zinc-400 shadow-xs">
           <div className="flex items-center gap-3">
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black dark:border-white border-t-transparent"></span>
             Loading tasks...
           </div>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700">
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-12 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300">
             <Icon name="clipboard" className="w-6 h-6" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">No tasks yet</h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No tasks yet</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
             Create your first task to start organizing your workflow.
           </p>
           <div className="mt-5">
@@ -159,8 +163,8 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : filteredTasks.length === 0 ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center">
-          <p className="text-gray-500">
+        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-12 text-center">
+          <p className="text-gray-500 dark:text-zinc-400">
             No tasks match your search and filter criteria.
           </p>
           <button
@@ -169,7 +173,7 @@ export default function DashboardPage() {
               setStatusFilter("all");
               setPriorityFilter("all");
             }}
-            className="mt-3 text-sm font-medium text-black underline"
+            className="mt-3 text-sm font-medium text-black dark:text-white underline"
           >
             Reset Filters
           </button>

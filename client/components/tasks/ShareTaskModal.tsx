@@ -98,33 +98,33 @@ export default function ShareTaskModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <div className="flex items-center justify-between border-b pb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-6 shadow-xl">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-4">
           <div className="flex items-center gap-2">
-            <Icon name="users" className="w-5 h-5 text-gray-700" />
+            <Icon name="users" className="w-5 h-5 text-gray-700 dark:text-zinc-300" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Share Task</h2>
-              <p className="text-xs text-gray-500 truncate max-w-xs">{task.title}</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Share Task</h2>
+              <p className="text-xs text-gray-500 dark:text-zinc-400 truncate max-w-xs">{task.title}</p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
           >
             <Icon name="close" className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          <div className="mt-4 rounded-lg bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 p-3 text-sm text-red-600 dark:text-rose-300">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-600">
+          <div className="mt-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 p-3 text-sm text-emerald-600 dark:text-emerald-300">
             {success}
           </div>
         )}
@@ -132,7 +132,7 @@ export default function ShareTaskModal({
         {/* Add Member Form (Only Owner) */}
         {isOwner ? (
           <form onSubmit={handleAddMember} className="mt-4 space-y-3">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Invite Collaborator
             </label>
             <div className="flex gap-2">
@@ -142,12 +142,12 @@ export default function ShareTaskModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="colleague@example.com"
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+                className="flex-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
               />
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as "editor" | "viewer")}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+                className="rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 transition"
               >
                 <option value="editor">Editor</option>
                 <option value="viewer">Viewer</option>
@@ -158,21 +158,21 @@ export default function ShareTaskModal({
             </div>
           </form>
         ) : (
-          <p className="mt-4 text-xs italic text-gray-500">
+          <p className="mt-4 text-xs italic text-gray-500 dark:text-zinc-400">
             Only the task owner can invite new members.
           </p>
         )}
 
         {/* Members List */}
-        <div className="mt-6 border-t pt-4">
-          <h3 className="text-sm font-semibold text-gray-900">Task Members</h3>
+        <div className="mt-6 border-t border-gray-100 dark:border-zinc-800 pt-4">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Task Members</h3>
 
           {loadingMembers ? (
-            <p className="mt-2 text-xs text-gray-500">Loading members...</p>
+            <p className="mt-2 text-xs text-gray-500 dark:text-zinc-400">Loading members...</p>
           ) : members.length === 0 ? (
-            <p className="mt-2 text-xs text-gray-500">No members listed.</p>
+            <p className="mt-2 text-xs text-gray-500 dark:text-zinc-400">No members listed.</p>
           ) : (
-            <div className="mt-3 divide-y max-h-48 overflow-y-auto">
+            <div className="mt-3 divide-y divide-gray-100 dark:divide-zinc-800 max-h-48 overflow-y-auto">
               {members.map((member, idx) => {
                 const u = member.user as unknown as { _id?: string; username?: string; email?: string };
                 const uId = typeof member.user === "string" ? member.user : u._id || "";
@@ -182,12 +182,12 @@ export default function ShareTaskModal({
                 return (
                   <div key={idx} className="flex items-center justify-between py-2.5">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{uName}</p>
-                      {uEmail && <p className="text-xs text-gray-500">{uEmail}</p>}
+                      <p className="text-sm font-medium text-gray-900 dark:text-zinc-100">{uName}</p>
+                      {uEmail && <p className="text-xs text-gray-500 dark:text-zinc-400">{uEmail}</p>}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium capitalize text-gray-700">
+                      <span className="rounded-full bg-gray-100 dark:bg-zinc-800 px-2.5 py-0.5 text-xs font-medium capitalize text-gray-700 dark:text-zinc-300">
                         {member.role}
                       </span>
 
@@ -195,7 +195,7 @@ export default function ShareTaskModal({
                         <button
                           type="button"
                           onClick={() => handleRemoveMember(uId, uEmail)}
-                          className="text-xs text-red-500 hover:underline"
+                          className="text-xs text-red-500 dark:text-rose-400 hover:underline"
                         >
                           Remove
                         </button>
@@ -208,11 +208,11 @@ export default function ShareTaskModal({
           )}
         </div>
 
-        <div className="mt-6 flex justify-end border-t pt-4">
+        <div className="mt-6 flex justify-end border-t border-gray-100 dark:border-zinc-800 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
           >
             Close
           </button>

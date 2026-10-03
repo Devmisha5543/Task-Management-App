@@ -132,28 +132,28 @@ export default function EditTaskModal({
   const subtaskProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <div className="flex items-center justify-between border-b pb-4">
-          <h2 className="text-xl font-bold text-gray-900">Edit Task</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Edit Task</h2>
           <button
             onClick={onClose}
             type="button"
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1 text-gray-400 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
           >
             ✕
           </button>
         </div>
 
         {errorMessage && (
-          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          <div className="mt-4 rounded-lg bg-red-50 dark:bg-rose-950/40 border border-red-200 dark:border-rose-900/60 p-3 text-sm text-red-600 dark:text-rose-300">
             {errorMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -161,25 +161,25 @@ export default function EditTaskModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Description
             </label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
                 Status
               </label>
               <select
@@ -187,7 +187,7 @@ export default function EditTaskModal({
                 onChange={(e) =>
                   setStatus(e.target.value as "todo" | "in-progress" | "done")
                 }
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+                className="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 transition"
               >
                 <option value="todo">To Do</option>
                 <option value="in-progress">In Progress</option>
@@ -196,7 +196,7 @@ export default function EditTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
                 Priority
               </label>
               <select
@@ -204,7 +204,7 @@ export default function EditTaskModal({
                 onChange={(e) =>
                   setPriority(e.target.value as "low" | "medium" | "high")
                 }
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+                className="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 transition"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -214,14 +214,14 @@ export default function EditTaskModal({
 
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
                   Due Date
                 </label>
                 {dueDate && (
                   <button
                     type="button"
                     onClick={() => setDueDate("")}
-                    className="text-xs text-red-500 hover:underline"
+                    className="text-xs text-red-500 dark:text-rose-400 hover:underline"
                   >
                     Clear
                   </button>
@@ -231,20 +231,20 @@ export default function EditTaskModal({
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+                className="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 transition"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Recurrence <span className="text-xs text-gray-400 font-normal">(Auto-spawns)</span>
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+                Recurrence <span className="text-xs text-gray-400 dark:text-zinc-500 font-normal">(Auto-spawns)</span>
               </label>
               <select
                 value={recurrence}
                 onChange={(e) =>
                   setRecurrence(e.target.value as "none" | "daily" | "weekly" | "monthly")
                 }
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+                className="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 transition"
               >
                 <option value="none">Does not repeat</option>
                 <option value="daily">Daily (+1 day)</option>
@@ -256,23 +256,23 @@ export default function EditTaskModal({
 
           {/* Task Dependencies / Prerequisites */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Prerequisites & Dependencies{" "}
               {selectedDependencies.length > 0 && (
-                <span className="text-xs font-normal text-blue-600">
+                <span className="text-xs font-normal text-blue-600 dark:text-blue-400">
                   ({selectedDependencies.length} selected)
                 </span>
               )}
             </label>
-            <p className="text-xs text-gray-500 mb-1">
+            <p className="text-xs text-gray-500 dark:text-zinc-400 mb-1">
               Prerequisite tasks that must be marked &quot;Done&quot; before this task can be marked &quot;Done&quot;.
             </p>
             {allTasks.filter((t) => t._id !== task._id).length === 0 ? (
-              <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2.5 text-xs text-gray-400 italic">
+              <div className="rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-800/40 p-2.5 text-xs text-gray-400 dark:text-zinc-500 italic">
                 No other tasks in workspace to select as prerequisites.
               </div>
             ) : (
-              <div className="max-h-28 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50 p-2 space-y-1">
+              <div className="max-h-28 overflow-y-auto rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-800/40 p-2 space-y-1">
                 {allTasks
                   .filter((t) => t._id !== task._id)
                   .map((t) => {
@@ -280,7 +280,7 @@ export default function EditTaskModal({
                     return (
                       <label
                         key={t._id}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-white text-xs cursor-pointer transition"
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-white dark:hover:bg-zinc-800 text-xs cursor-pointer transition"
                       >
                         <input
                           type="checkbox"
@@ -292,16 +292,16 @@ export default function EditTaskModal({
                               setSelectedDependencies([...selectedDependencies, t._id]);
                             }
                           }}
-                          className="rounded border-gray-300 text-black focus:ring-black"
+                          className="rounded border-gray-300 dark:border-zinc-600 text-black dark:text-white focus:ring-black"
                         />
-                        <span className="font-medium text-gray-800 line-clamp-1 flex-1">
+                        <span className="font-medium text-gray-800 dark:text-zinc-200 line-clamp-1 flex-1">
                           {t.title}
                         </span>
                         <span
                           className={`text-[10px] px-1.5 py-0.5 rounded capitalize ${
                             t.status === "done"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-gray-200 text-gray-700"
+                              ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300"
+                              : "bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-300"
                           }`}
                         >
                           {t.status}
@@ -314,32 +314,32 @@ export default function EditTaskModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Labels <span className="text-xs text-gray-500">(comma-separated)</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+              Labels <span className="text-xs text-gray-500 dark:text-zinc-400">(comma-separated)</span>
             </label>
             <input
               type="text"
               value={labelsInput}
               onChange={(e) => setLabelsInput(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
             />
           </div>
 
           {/* Checklist / Subtasks Section */}
-          <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3.5">
+          <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-800/40 p-3.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-medium text-sm text-gray-800">
+              <div className="flex items-center gap-1.5 font-medium text-sm text-gray-800 dark:text-zinc-200">
                 <Icon
                   name="check"
                   className={`w-4 h-4 ${
                     completedSubtasks === totalSubtasks && totalSubtasks > 0
-                      ? "text-emerald-600"
-                      : "text-blue-600"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-blue-600 dark:text-blue-400"
                   }`}
                 />
                 <span>Checklist / Subtasks</span>
                 {totalSubtasks > 0 && (
-                  <span className="text-xs font-semibold text-gray-500">
+                  <span className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
                     ({completedSubtasks}/{totalSubtasks})
                   </span>
                 )}
@@ -348,8 +348,8 @@ export default function EditTaskModal({
                 <span
                   className={`text-xs font-bold ${
                     completedSubtasks === totalSubtasks
-                      ? "text-emerald-600"
-                      : "text-blue-600"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-blue-600 dark:text-blue-400"
                   }`}
                 >
                   {subtaskProgress}%
@@ -359,7 +359,7 @@ export default function EditTaskModal({
 
             {/* Progress Bar */}
             {totalSubtasks > 0 && (
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-700">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
                     subtaskProgress === 100 ? "bg-emerald-500" : "bg-blue-600"
@@ -375,20 +375,20 @@ export default function EditTaskModal({
                 {subtasks.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-xs border border-gray-200/80 shadow-2xs group"
+                    className="flex items-center justify-between rounded-lg bg-white dark:bg-zinc-800 px-3 py-2 text-xs border border-gray-200/80 dark:border-zinc-700 shadow-2xs group"
                   >
                     <label className="flex items-center gap-2.5 flex-1 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={item.completed}
                         onChange={() => handleToggleSubtask(index)}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        className="h-4 w-4 rounded border-gray-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 cursor-pointer"
                       />
                       <span
                         className={`transition ${
                           item.completed
-                            ? "line-through text-gray-400"
-                            : "text-gray-800 font-medium"
+                            ? "line-through text-gray-400 dark:text-zinc-500"
+                            : "text-gray-800 dark:text-zinc-200 font-medium"
                         }`}
                       >
                         {item.title}
@@ -397,7 +397,7 @@ export default function EditTaskModal({
                     <button
                       type="button"
                       onClick={() => handleDeleteSubtask(index)}
-                      className="text-gray-400 hover:text-red-500 transition p-1"
+                      className="text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-rose-400 transition p-1"
                       title="Delete subtask"
                     >
                       <Icon name="trash" className="w-3.5 h-3.5" />
@@ -420,23 +420,23 @@ export default function EditTaskModal({
                   }
                 }}
                 placeholder="Add subtask item & press Enter..."
-                className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs focus:border-black focus:outline-none"
+                className="flex-1 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-3 py-1.5 text-xs focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
               />
               <button
                 type="button"
                 onClick={handleAddSubtask}
-                className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition"
+                className="rounded-lg bg-blue-600 dark:bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition"
               >
                 + Add
               </button>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 border-t pt-4">
+          <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-zinc-800 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-lg border border-gray-300 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
             >
               Cancel
             </button>

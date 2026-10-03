@@ -10,6 +10,7 @@ import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
 import TaskActivityModal from "@/components/tasks/TaskActivityModal";
 import { useTaskStore } from "@/store/taskStore";
 import type { Task } from "@/types/task";
+import Icon from "@/components/ui/Icon";
 
 export default function CalendarPage() {
   const tasks = useTaskStore((state) => state.tasks);
@@ -64,14 +65,14 @@ export default function CalendarPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-zinc-100">
               Calendar & Timeline
             </h1>
-            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+            <span className="rounded-full bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">
               Interactive
             </span>
           </div>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400">
             Schedule deadlines, track scheduled milestones, and manage task timelines.
           </p>
         </div>
@@ -82,35 +83,37 @@ export default function CalendarPage() {
               setCreateInitialDate(undefined);
               setIsCreateOpen(true);
             }}
+            className="flex items-center gap-1.5 shadow-sm"
           >
-            + Create Task
+            <Icon name="plus" className="h-4 w-4" />
+            <span>Create Task</span>
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-gray-500">Total Tasks</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">{tasks.length}</p>
+        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-2xs">
+          <p className="text-xs font-medium text-gray-500 dark:text-zinc-400">Total Tasks</p>
+          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-zinc-100">{tasks.length}</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-gray-500">Scheduled Deadlines</p>
-          <p className="mt-1 text-2xl font-bold text-blue-600">{scheduledCount}</p>
+        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-2xs">
+          <p className="text-xs font-medium text-gray-500 dark:text-zinc-400">Scheduled Deadlines</p>
+          <p className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">{scheduledCount}</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-gray-500">Unscheduled</p>
-          <p className="mt-1 text-2xl font-bold text-amber-600">
+        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-2xs">
+          <p className="text-xs font-medium text-gray-500 dark:text-zinc-400">Unscheduled</p>
+          <p className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
             {tasks.length - scheduledCount}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-medium text-gray-500">Overall Progress</p>
+        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-2xs">
+          <p className="text-xs font-medium text-gray-500 dark:text-zinc-400">Overall Progress</p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-emerald-600">{completionRate}%</span>
-            <span className="text-xs text-gray-400">completed</span>
+            <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{completionRate}%</span>
+            <span className="text-xs text-gray-400 dark:text-zinc-500">completed</span>
           </div>
         </div>
       </div>
@@ -122,12 +125,12 @@ export default function CalendarPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search calendar tasks..."
-            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm focus:border-black focus:outline-none"
+            className="w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 placeholder-gray-400 dark:placeholder-zinc-500 px-4 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-2.5 text-xs text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-2.5 text-xs text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300"
             >
               Clear
             </button>
@@ -138,7 +141,7 @@ export default function CalendarPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none"
+            className="rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
           >
             <option value="all">All Statuses</option>
             <option value="todo">To Do</option>
@@ -149,7 +152,7 @@ export default function CalendarPage() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none"
+            className="rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-3 py-2 text-sm focus:border-black dark:focus:border-zinc-500 focus:outline-none transition"
           >
             <option value="all">All Priorities</option>
             <option value="low">Low Priority</option>
@@ -160,15 +163,15 @@ export default function CalendarPage() {
       </div>
 
       {error && (
-        <div className="rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 border border-red-200">
+        <div className="rounded-xl bg-red-50 dark:bg-rose-950/40 p-4 text-sm font-medium text-red-600 dark:text-rose-300 border border-red-200 dark:border-rose-900/60">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center rounded-2xl border border-gray-200 bg-white p-12 text-gray-500 shadow-xs">
+        <div className="flex justify-center rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-12 text-gray-500 dark:text-zinc-400 shadow-xs">
           <div className="flex items-center gap-3">
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black dark:border-white border-t-transparent"></span>
             Loading calendar...
           </div>
         </div>

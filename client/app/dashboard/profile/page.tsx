@@ -127,30 +127,30 @@ export default function ProfilePage() {
     : null;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl animate-in fade-in duration-200">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">User Profile</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">User Profile</h1>
+        <p className="mt-1 text-sm text-gray-600 dark:text-zinc-300">
           Update your profile details, avatar, and contact information.
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-200">
+        <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-950/40 p-4 text-sm font-medium text-red-600 dark:text-red-300 border border-red-200 dark:border-red-900/60">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-6 rounded-xl bg-green-50 p-4 text-sm text-green-600 border border-green-200">
+        <div className="mb-6 rounded-xl bg-green-50 dark:bg-emerald-950/40 p-4 text-sm font-medium text-green-700 dark:text-emerald-300 border border-green-200 dark:border-emerald-900/60">
           {success}
         </div>
       )}
 
       {/* Main Profile Card */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm transition-colors">
         {/* Cover Banner */}
-        <div className="h-28 bg-linear-to-r from-gray-900 via-gray-800 to-black"></div>
+        <div className="h-28 bg-linear-to-r from-zinc-800 via-zinc-900 to-black dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-950 border-b border-gray-200 dark:border-zinc-800"></div>
 
         {/* Profile Avatar & Header Actions */}
         <div className="relative px-6 pb-6">
@@ -159,7 +159,7 @@ export default function ProfilePage() {
               {/* Clickable Profile Picture to Enlarge */}
               <div
                 onClick={() => setIsPreviewOpen(true)}
-                className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-gray-900 shadow-md flex items-center justify-center text-white text-2xl font-bold transition hover:opacity-90"
+                className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4 border-white dark:border-zinc-900 bg-gray-900 dark:bg-zinc-800 shadow-md flex items-center justify-center text-white text-2xl font-bold transition hover:opacity-90"
                 title="Click to view larger profile photo"
               >
                 {user?.profilePhoto ? (
@@ -175,23 +175,23 @@ export default function ProfilePage() {
                   <span>{getInitials(user?.username)}</span>
                 )}
                 {/* Hover overlay indicator */}
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-semibold text-white transition gap-1">
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-semibold text-white transition gap-1">
                   <Icon name="search" className="w-4 h-4" /> View
                 </div>
               </div>
 
               <div>
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   {user?.username || "Task Manager User"}
                 </h2>
-                <p className="text-sm text-gray-500">{user?.email}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-zinc-300">{user?.email}</p>
               </div>
             </div>
 
             {/* Quick Upload Photo */}
             <div>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 bg-white px-3.5 py-2 text-xs font-medium text-gray-700 shadow-2xs hover:bg-gray-50">
-                <Icon name="camera" className="w-4 h-4 text-gray-600" />
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs font-semibold text-gray-800 dark:text-zinc-100 shadow-2xs hover:bg-gray-50 dark:hover:bg-zinc-700 transition">
+                <Icon name="camera" className="w-4 h-4 text-gray-600 dark:text-zinc-300" />
                 <span>{uploading ? "Uploading..." : "Change Photo"}</span>
                 <input
                   type="file"
@@ -205,11 +205,11 @@ export default function ProfilePage() {
           </div>
 
           {/* Editable Profile Information Form */}
-          <form onSubmit={handleSaveProfile} className="space-y-4 border-t pt-6">
-            <h3 className="text-base font-semibold text-gray-900">Edit Details</h3>
+          <form onSubmit={handleSaveProfile} className="space-y-4 border-t border-gray-100 dark:border-zinc-800 pt-6">
+            <h3 className="text-base font-bold text-gray-900 dark:text-white">Edit Details</h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1.5">
                 Username <span className="text-red-500">*</span>
               </label>
               <input
@@ -218,12 +218,12 @@ export default function ProfilePage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="e.g. wamisha"
-                className="mt-1 w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-black focus:outline-none"
+                className="w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:border-black dark:focus:border-white focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition shadow-2xs"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1.5">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <input
@@ -232,28 +232,28 @@ export default function ProfilePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="mt-1 w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-black focus:outline-none"
+                className="w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:border-black dark:focus:border-white focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition shadow-2xs"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number <span className="text-xs text-gray-500">(optional)</span>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1.5">
+                Phone Number <span className="text-xs text-gray-500 dark:text-zinc-400 font-normal">(optional)</span>
               </label>
               <input
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="+251 91 234 5678"
-                className="mt-1 w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-black focus:outline-none"
+                className="w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:border-black dark:focus:border-white focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition shadow-2xs"
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1.5 text-xs text-gray-600 dark:text-zinc-300">
                 Privacy controls for phone visibility will be available in future settings.
               </p>
             </div>
 
             <div className="flex justify-end pt-3">
-              <Button type="submit" disabled={savingProfile}>
+              <Button type="submit" disabled={savingProfile} className="shadow-sm">
                 {savingProfile ? "Saving..." : "Save Profile Changes"}
               </Button>
             </div>
@@ -261,8 +261,8 @@ export default function ProfilePage() {
 
           {/* Subtle Fine-Print Joined Date */}
           {formattedDate && (
-            <div className="mt-8 border-t pt-4 text-center">
-              <span className="text-xs text-gray-400">
+            <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-4 text-center">
+              <span className="text-xs text-gray-500 dark:text-zinc-400 font-medium">
                 Joined: {formattedDate}
               </span>
             </div>
@@ -273,13 +273,13 @@ export default function ProfilePage() {
       {/* Profile Picture Enlarge Preview Modal */}
       {isPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
-          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-bold text-gray-900">Profile Photo</h3>
+          <div className="relative w-full max-w-md rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-2xl border border-gray-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-3">
+              <h3 className="font-bold text-gray-900 dark:text-white">Profile Photo</h3>
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(false)}
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-200 transition"
               >
                 ✕
               </button>
@@ -287,7 +287,7 @@ export default function ProfilePage() {
 
             {/* Enlarged Photo Container */}
             <div className="mt-4 flex justify-center">
-              <div className="h-64 w-64 overflow-hidden rounded-2xl bg-gray-900 flex items-center justify-center text-white text-5xl font-bold shadow-inner">
+              <div className="h-64 w-64 overflow-hidden rounded-2xl bg-gray-900 dark:bg-zinc-800 flex items-center justify-center text-white text-5xl font-bold shadow-inner">
                 {user?.profilePhoto ? (
                   <Image
                     src={user.profilePhoto}
@@ -304,9 +304,9 @@ export default function ProfilePage() {
             </div>
 
             {/* Actions inside Modal */}
-            <div className="mt-6 flex flex-col gap-2">
-              <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-black py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition">
-                <Icon name="camera" className="w-4 h-4 text-white" />
+            <div className="mt-6 flex flex-col gap-2.5">
+              <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-black dark:bg-white py-2.5 text-sm font-semibold text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 transition shadow-sm">
+                <Icon name="camera" className="w-4 h-4 text-white dark:text-black" />
                 <span>Change Picture</span>
                 <input
                   type="file"
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                   type="button"
                   onClick={handleRemovePhoto}
                   disabled={deletingPhoto}
-                  className="w-full rounded-xl border border-red-200 bg-red-50 py-2.5 text-sm font-medium text-red-600 hover:bg-red-100 transition disabled:opacity-50"
+                  className="w-full rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition disabled:opacity-50"
                 >
                   {deletingPhoto ? "Removing..." : "Remove Picture"}
                 </button>
@@ -334,7 +334,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(false)}
-                className="mt-1 w-full rounded-xl border border-gray-300 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                className="mt-1 w-full rounded-xl border border-gray-300 dark:border-zinc-700 bg-transparent py-2 text-xs font-semibold text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
               >
                 Close Preview
               </button>

@@ -108,37 +108,37 @@ export default function NotificationBell() {
     switch (type) {
       case "deadline_overdue":
         return {
-          bg: "bg-rose-50 border-rose-200 text-rose-700",
+          bg: "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300",
           icon: "alert-circle" as const,
         };
       case "deadline_approaching":
         return {
-          bg: "bg-amber-50 border-amber-200 text-amber-700",
+          bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/60 text-amber-700 dark:text-amber-300",
           icon: "clock" as const,
         };
       case "task_shared":
         return {
-          bg: "bg-purple-50 border-purple-200 text-purple-700",
+          bg: "bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-900/60 text-purple-700 dark:text-purple-300",
           icon: "users" as const,
         };
       case "new_comment":
         return {
-          bg: "bg-teal-50 border-teal-200 text-teal-700",
+          bg: "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-900/60 text-teal-700 dark:text-teal-300",
           icon: "comment" as const,
         };
       case "recurrence_spawned":
         return {
-          bg: "bg-blue-50 border-blue-200 text-blue-700",
+          bg: "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/60 text-blue-700 dark:text-blue-300",
           icon: "repeat" as const,
         };
       case "dependency_blocked":
         return {
-          bg: "bg-orange-50 border-orange-200 text-orange-700",
+          bg: "bg-orange-50 dark:bg-orange-950/40 border-orange-200 dark:border-orange-900/60 text-orange-700 dark:text-orange-300",
           icon: "link" as const,
         };
       default:
         return {
-          bg: "bg-gray-50 border-gray-200 text-gray-700",
+          bg: "bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-300",
           icon: "sparkles" as const,
         };
     }
@@ -166,7 +166,7 @@ export default function NotificationBell() {
           setIsOpen(!isOpen);
           if (!isOpen) fetchNotifs();
         }}
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-black transition shadow-2xs"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white transition shadow-2xs"
         aria-label="Notifications"
         title="In-App Notification Center"
       >
@@ -180,13 +180,13 @@ export default function NotificationBell() {
 
       {/* Dropdown Popover */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-4 py-3">
+          <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 bg-gray-50/70 dark:bg-zinc-900 px-4 py-3">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white">Notifications</h3>
               {unreadCount > 0 && (
-                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                <span className="rounded-full bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
                   {unreadCount} unread
                 </span>
               )}
@@ -197,7 +197,7 @@ export default function NotificationBell() {
                 <button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
                 >
                   Mark all read
                 </button>
@@ -206,7 +206,7 @@ export default function NotificationBell() {
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-xs text-gray-400 hover:text-red-600"
+                  className="text-xs text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-rose-400"
                   title="Clear all notifications"
                 >
                   Clear
@@ -216,14 +216,14 @@ export default function NotificationBell() {
           </div>
 
           {/* Filter Pills */}
-          <div className="flex gap-2 border-b border-gray-100 px-4 py-2 bg-white">
+          <div className="flex gap-2 border-b border-gray-100 dark:border-zinc-800 px-4 py-2 bg-white dark:bg-zinc-900">
             <button
               type="button"
               onClick={() => setFilter("all")}
               className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                 filter === "all"
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-500 hover:bg-gray-100"
+                  ? "bg-gray-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                  : "text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
               }`}
             >
               All ({notifications.length})
@@ -233,8 +233,8 @@ export default function NotificationBell() {
               onClick={() => setFilter("unread")}
               className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                 filter === "unread"
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-500 hover:bg-gray-100"
+                  ? "bg-gray-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                  : "text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
               }`}
             >
               Unread ({unreadCount})
@@ -242,20 +242,20 @@ export default function NotificationBell() {
           </div>
 
           {/* Notifications List */}
-          <div className="max-h-[380px] overflow-y-auto divide-y divide-gray-100">
+          <div className="max-h-[380px] overflow-y-auto divide-y divide-gray-100 dark:divide-zinc-800/80">
             {loading && notifications.length === 0 ? (
-              <div className="flex items-center justify-center p-8 text-xs text-gray-400">
+              <div className="flex items-center justify-center p-8 text-xs text-gray-400 dark:text-zinc-500">
                 Loading notifications...
               </div>
             ) : filteredNotifs.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-8 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-400 mb-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 mb-2">
                   <Icon name="bell" className="h-5 w-5" />
                 </div>
-                <p className="text-xs font-medium text-gray-600">
+                <p className="text-xs font-medium text-gray-600 dark:text-zinc-300">
                   {filter === "unread" ? "No unread alerts" : "No notifications yet"}
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
+                <p className="text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5">
                   Approaching deadlines and team mentions will appear here.
                 </p>
               </div>
@@ -270,8 +270,8 @@ export default function NotificationBell() {
                     }}
                     className={`group flex items-start gap-3 p-3.5 transition cursor-pointer ${
                       notif.read
-                        ? "bg-white hover:bg-gray-50/80 opacity-75"
-                        : "bg-blue-50/30 hover:bg-blue-50/60"
+                        ? "bg-white dark:bg-zinc-900 hover:bg-gray-50/80 dark:hover:bg-zinc-800/60 opacity-75"
+                        : "bg-blue-50/30 dark:bg-blue-950/20 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
                     }`}
                   >
                     {/* Category Icon Badge */}
@@ -286,16 +286,16 @@ export default function NotificationBell() {
                       <div className="flex items-baseline justify-between gap-1">
                         <h4
                           className={`text-xs font-semibold leading-tight line-clamp-1 ${
-                            notif.read ? "text-gray-800" : "text-gray-950 font-bold"
+                            notif.read ? "text-gray-800 dark:text-zinc-300" : "text-gray-950 dark:text-zinc-100 font-bold"
                           }`}
                         >
                           {notif.title}
                         </h4>
-                        <span className="shrink-0 text-[10px] text-gray-400">
+                        <span className="shrink-0 text-[10px] text-gray-400 dark:text-zinc-500">
                           {formatTimeAgo(notif.createdAt)}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                      <p className="mt-0.5 text-xs text-gray-600 dark:text-zinc-400 line-clamp-2 leading-relaxed">
                         {notif.message}
                       </p>
                     </div>
@@ -306,7 +306,7 @@ export default function NotificationBell() {
                         <button
                           type="button"
                           onClick={(e) => handleMarkAsRead(notif._id, e)}
-                          className="rounded p-1 text-gray-400 hover:text-blue-600 hover:bg-gray-100"
+                          className="rounded p-1 text-gray-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
                           title="Mark as read"
                         >
                           <Icon name="check" className="h-3 w-3" />
@@ -315,7 +315,7 @@ export default function NotificationBell() {
                       <button
                         type="button"
                         onClick={(e) => handleDelete(notif._id, e)}
-                        className="rounded p-1 text-gray-400 hover:text-red-600 hover:bg-gray-100"
+                        className="rounded p-1 text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-rose-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
                         title="Delete"
                       >
                         <Icon name="close" className="h-3 w-3" />
@@ -328,7 +328,7 @@ export default function NotificationBell() {
           </div>
 
           {/* Footer note */}
-          <div className="border-t border-gray-100 bg-gray-50/50 px-4 py-2 text-center text-[10px] text-gray-400">
+          <div className="border-t border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/60 px-4 py-2 text-center text-[10px] text-gray-500 dark:text-zinc-400">
             Real-time deadline reminders & task collaboration events
           </div>
         </div>

@@ -73,7 +73,7 @@ function SortableTaskItem({
       <div
         {...attributes}
         {...listeners}
-        className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing p-1 rounded-md bg-white/80 hover:bg-white border border-gray-200 shadow-xs text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing p-1 rounded-md bg-white/90 dark:bg-zinc-800/90 hover:bg-white dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700 shadow-xs text-gray-400 dark:text-zinc-400 hover:text-gray-600 dark:hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity"
         title="Drag to move task"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,12 +92,12 @@ function SortableTaskItem({
 
       {/* Quick Move Bar */}
       {onMove && (
-        <div className="mt-1 flex items-center justify-end gap-1 px-1 text-xs text-gray-500">
-          <span className="text-[10px] text-gray-400">Move:</span>
+        <div className="mt-1 flex items-center justify-end gap-1 px-1 text-xs text-gray-500 dark:text-zinc-400">
+          <span className="text-[10px] text-gray-400 dark:text-zinc-500">Move:</span>
           {task.status !== "todo" && (
             <button
               onClick={() => onMove(task, "todo")}
-              className="rounded bg-white px-2 py-0.5 text-[11px] font-medium border border-gray-200 hover:bg-gray-100"
+              className="rounded bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 px-2 py-0.5 text-[11px] font-medium border border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
             >
               To Do
             </button>
@@ -105,7 +105,7 @@ function SortableTaskItem({
           {task.status !== "in-progress" && (
             <button
               onClick={() => onMove(task, "in-progress")}
-              className="rounded bg-white px-2 py-0.5 text-[11px] font-medium border border-gray-200 hover:bg-gray-100"
+              className="rounded bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 px-2 py-0.5 text-[11px] font-medium border border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
             >
               In Progress
             </button>
@@ -113,7 +113,7 @@ function SortableTaskItem({
           {task.status !== "done" && (
             <button
               onClick={() => onMove(task, "done")}
-              className="rounded bg-white px-2 py-0.5 text-[11px] font-medium border border-gray-200 hover:bg-gray-100"
+              className="rounded bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 px-2 py-0.5 text-[11px] font-medium border border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
             >
               Done
             </button>
@@ -154,14 +154,14 @@ function KanbanColumn({
       ref={setNodeRef}
       className={`flex flex-col rounded-2xl border p-4 transition-colors ${
         isOver
-          ? "border-blue-400 bg-blue-50/50 shadow-md ring-2 ring-blue-400/20"
-          : "border-gray-200 bg-gray-50/70 shadow-2xs"
+          ? "border-blue-400 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 shadow-md ring-2 ring-blue-400/20"
+          : "border-gray-200 dark:border-zinc-800 bg-gray-50/70 dark:bg-zinc-900/50 shadow-2xs"
       }`}
     >
       {/* Column Header */}
-      <div className="mb-4 flex items-center justify-between border-b border-gray-200 pb-3">
+      <div className="mb-4 flex items-center justify-between border-b border-gray-200 dark:border-zinc-800 pb-3">
         <div className="flex items-center gap-2">
-          <h3 className="font-bold text-gray-900">{title}</h3>
+          <h3 className="font-bold text-gray-900 dark:text-zinc-100">{title}</h3>
           <span
             className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${badgeClass}`}
           >
@@ -177,7 +177,7 @@ function KanbanColumn({
       >
         <div className="flex flex-1 flex-col gap-3 min-h-[300px]">
           {tasks.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-gray-200 p-6 text-center text-xs text-gray-400">
+            <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-gray-200 dark:border-zinc-800 p-6 text-center text-xs text-gray-400 dark:text-zinc-500">
               Drop tasks here
             </div>
           ) : (
@@ -282,19 +282,19 @@ export default function KanbanBoard({
     {
       id: "todo" as const,
       title: "To Do",
-      badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+      badgeClass: "bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700",
       tasks: todoTasks,
     },
     {
       id: "in-progress" as const,
       title: "In Progress",
-      badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
+      badgeClass: "bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/60",
       tasks: inProgressTasks,
     },
     {
       id: "done" as const,
       title: "Done",
-      badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      badgeClass: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
       tasks: doneTasks,
     },
   ];

@@ -16,6 +16,7 @@ import TaskStats from "@/components/tasks/TaskStats";
 import { useTaskStore } from "@/store/taskStore";
 import { useAuthStore } from "@/store/authStore";
 import type { Task } from "@/types/task";
+import Icon from "@/components/ui/Icon";
 
 export default function MyTasksPage() {
   const user = useAuthStore((state) => state.user);
@@ -89,22 +90,26 @@ export default function MyTasksPage() {
   }, [tasks, currentUserId, searchQuery, statusFilter, priorityFilter, sortBy]);
 
   return (
-    <div>
+    <div className="animate-in fade-in duration-200">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Tasks</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400">
             Tasks created and owned by you.
           </p>
         </div>
 
-        <Button onClick={() => setIsCreateOpen(true)}>
-          + Create Task
+        <Button
+          onClick={() => setIsCreateOpen(true)}
+          className="flex items-center gap-1.5 shadow-sm"
+        >
+          <Icon name="plus" className="h-4 w-4" />
+          <span>Create Task</span>
         </Button>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 border border-red-200">
+        <div className="mb-6 rounded-xl bg-red-50 dark:bg-red-950/40 p-4 text-sm font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60">
           {error}
         </div>
       )}
@@ -125,15 +130,15 @@ export default function MyTasksPage() {
       />
 
       {loading ? (
-        <div className="flex justify-center rounded-2xl border border-gray-200 bg-white p-12 text-gray-500 shadow-xs">
+        <div className="flex justify-center rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-12 text-gray-500 dark:text-zinc-400 shadow-xs">
           <div className="flex items-center gap-3">
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-black dark:border-white border-t-transparent"></span>
             Loading tasks...
           </div>
         </div>
       ) : personalTasks.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <p className="text-gray-500">No personal tasks found.</p>
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-12 text-center">
+          <p className="text-gray-500 dark:text-zinc-400">No personal tasks found.</p>
           <div className="mt-4">
             <Button onClick={() => setIsCreateOpen(true)}>
               Create Task

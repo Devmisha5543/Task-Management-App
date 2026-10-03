@@ -1,7 +1,7 @@
 @echo off
 git add .
-git commit -m "feat: Implement In-App Notifications, Task Dependencies & Recurrence, and Productivity Analytics & Export across Web and Mobile"
+git commit -m "feat: Add dedicated Analytics page, sidebar link, and solid dark mode theming for Analytics Hub"
 git push origin main
 echo.
-echo Features 2, 3, and 4 successfully pushed to main!
+echo All features, analytics page, and dark mode fixes successfully pushed to main!
 pause
