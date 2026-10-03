@@ -11,6 +11,7 @@ import ShareTaskModal from "@/components/tasks/ShareTaskModal";
 import TaskAttachmentsModal from "@/components/tasks/TaskAttachmentsModal";
 import TaskCommentsModal from "@/components/tasks/TaskCommentsModal";
 import TaskActivityModal from "@/components/tasks/TaskActivityModal";
+import AnalyticsModal from "@/components/tasks/AnalyticsModal";
 import TaskCard from "@/components/tasks/TaskCard";
 import TaskFilters from "@/components/tasks/TaskFilters";
 import TaskStats from "@/components/tasks/TaskStats";
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const fetchTasks = useTaskStore((state) => state.fetchTasks);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [createInitialDate, setCreateInitialDate] = useState<string | undefined>(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [sharingTask, setSharingTask] = useState<Task | null>(null);
@@ -98,9 +100,19 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Button onClick={() => setIsCreateOpen(true)}>
-          + Create Task
-        </Button>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsAnalyticsOpen(true)}
+            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-800 shadow-2xs hover:bg-gray-50 hover:border-gray-300 transition"
+          >
+            <Icon name="chart" className="h-4 w-4 text-blue-600" />
+            <span>Analytics & Export</span>
+          </button>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            + Create Task
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -237,6 +249,12 @@ export default function DashboardPage() {
         task={activityTask}
         isOpen={!!activityTask}
         onClose={() => setActivityTask(null)}
+      />
+
+      <AnalyticsModal
+        isOpen={isAnalyticsOpen}
+        onClose={() => setIsAnalyticsOpen(false)}
+        tasks={tasks}
       />
     </div>
   );

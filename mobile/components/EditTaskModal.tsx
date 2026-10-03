@@ -19,6 +19,7 @@ interface EditTaskModalProps {
   visible: boolean;
   onClose: () => void;
   onSubmit: (id: string, data: CreateTaskData) => Promise<void>;
+  availableTasks?: Task[];
 }
 
 export default function EditTaskModal({
@@ -26,12 +27,15 @@ export default function EditTaskModal({
   visible,
   onClose,
   onSubmit,
+  availableTasks = [],
 }: EditTaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
+  const [recurrence, setRecurrence] = useState<"none" | "daily" | "weekly" | "monthly">("none");
+  const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const [labels, setLabels] = useState("");
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
@@ -45,6 +49,11 @@ export default function EditTaskModal({
       setStatus(task.status);
       setPriority(task.priority);
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "");
+      setRecurrence(task.recurrence || (task.isRecurring ? "daily" : "none"));
+      const depIds = (task.dependencies || []).map((d) =>
+        typeof d === "string" ? d : d._id
+      );
+      setSelectedDependencies(depIds);
       setLabels(task.labels ? task.labels.join(", ") : "");
       setSubtasks(task.subtasks ? [...task.subtasks] : []);
       setNewSubtaskTitle("");
@@ -107,6 +116,9 @@ export default function EditTaskModal({
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         labels: labelArray,
         subtasks,
+        isRecurring: recurrence !== "none",
+        recurrence,
+        dependencies: selectedDependencies,
       });
 
       onClose();
@@ -256,6 +268,90 @@ export default function EditTaskModal({
               placeholder="e.g. 2026-10-15"
               placeholderTextColor="#9CA3AF"
             />
+
+            {/* Recurrence Selection */}
+            <Text style={styles.label}>Recurrence (Auto-spawns next cycle)</Text>
+            <View style={styles.optionRow}>
+              {(["none", "daily", "weekly", "monthly"] as const).map((r) => (
+                <TouchableOpacity
+                  key={r}
+                  style={[
+                    styles.optionBtn,
+                    recurrence === r && styles.optionBtnActive,
+                  ]}
+                  onPress={() => setRecurrence(r)}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      recurrence === r && styles.optionTextActive,
+                    ]}
+                  >
+                    {r.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Task Dependencies / Prerequisites */}
+            <Text style={styles.label}>
+              Prerequisites & Dependencies{" "}
+              {selectedDependencies.length > 0 ? `(${selectedDependencies.length} selected)` : ""}
+            </Text>
+            {availableTasks.filter((t) => t._id !== task._id).length === 0 ? (
+              <Text style={{ fontSize: 11, color: "#9ca3af", fontStyle: "italic", marginBottom: 12 }}>
+                No other tasks in workspace to select as prerequisites.
+              </Text>
+            ) : (
+              <View style={{ maxHeight: 120, borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 8, padding: 8, marginBottom: 14 }}>
+                <ScrollView nestedScrollEnabled>
+                  {availableTasks
+                    .filter((t) => t._id !== task._id)
+                    .map((t) => {
+                      const isChecked = selectedDependencies.includes(t._id);
+                      return (
+                        <TouchableOpacity
+                          key={t._id}
+                          onPress={() => {
+                            if (isChecked) {
+                              setSelectedDependencies(selectedDependencies.filter((id) => id !== t._id));
+                            } else {
+                              setSelectedDependencies([...selectedDependencies, t._id]);
+                            }
+                          }}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            paddingVertical: 5,
+                          }}
+                        >
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
+                            <Icon
+                              name={isChecked ? "checkmark-outline" : "checkbox-outline"}
+                              size={16}
+                              color={isChecked ? "#2563eb" : "#9ca3af"}
+                            />
+                            <Text
+                              numberOfLines={1}
+                              style={{
+                                fontSize: 12,
+                                color: isChecked ? "#111827" : "#4b5563",
+                                fontWeight: isChecked ? "600" : "400",
+                              }}
+                            >
+                              {t.title}
+                            </Text>
+                          </View>
+                          <Text style={{ fontSize: 10, color: t.status === "done" ? "#16a34a" : "#6b7280" }}>
+                            {t.status}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                </ScrollView>
+              </View>
+            )}
 
             <Text style={styles.label}>Labels (comma separated)</Text>
             <TextInput

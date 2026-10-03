@@ -12,24 +12,28 @@ import {
   Platform,
 } from "react-native";
 import Icon from "./Icon";
-import type { CreateTaskData } from "../types/task";
+import type { CreateTaskData, Task } from "../types/task";
 
 interface CreateTaskModalProps {
   visible: boolean;
   onClose: () => void;
   onSubmit: (data: CreateTaskData) => Promise<void>;
+  availableTasks?: Task[];
 }
 
 export default function CreateTaskModal({
   visible,
   onClose,
   onSubmit,
+  availableTasks = [],
 }: CreateTaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
+  const [recurrence, setRecurrence] = useState<"none" | "daily" | "weekly" | "monthly">("none");
+  const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const [labels, setLabels] = useState("");
   const [subtasks, setSubtasks] = useState<{ title: string; completed: boolean }[]>([]);
   const [subtaskInput, setSubtaskInput] = useState("");
@@ -69,6 +73,9 @@ export default function CreateTaskModal({
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         labels: labelArray,
         subtasks: subtasks.length > 0 ? subtasks : undefined,
+        isRecurring: recurrence !== "none",
+        recurrence,
+        dependencies: selectedDependencies.length > 0 ? selectedDependencies : undefined,
       });
 
       setTitle("");
@@ -76,6 +83,8 @@ export default function CreateTaskModal({
       setStatus("todo");
       setPriority("medium");
       setDueDate("");
+      setRecurrence("none");
+      setSelectedDependencies([]);
       setLabels("");
       setSubtasks([]);
       setSubtaskInput("");
@@ -224,6 +233,88 @@ export default function CreateTaskModal({
               placeholder="e.g. 2026-10-15"
               placeholderTextColor="#9CA3AF"
             />
+
+            {/* Recurrence Selection */}
+            <Text style={styles.label}>Recurrence (Auto-spawns next cycle)</Text>
+            <View style={styles.optionRow}>
+              {(["none", "daily", "weekly", "monthly"] as const).map((r) => (
+                <TouchableOpacity
+                  key={r}
+                  style={[
+                    styles.optionBtn,
+                    recurrence === r && styles.optionBtnActive,
+                  ]}
+                  onPress={() => setRecurrence(r)}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      recurrence === r && styles.optionTextActive,
+                    ]}
+                  >
+                    {r.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Task Dependencies / Prerequisites */}
+            <Text style={styles.label}>
+              Prerequisites & Dependencies{" "}
+              {selectedDependencies.length > 0 ? `(${selectedDependencies.length} selected)` : ""}
+            </Text>
+            {availableTasks.length === 0 ? (
+              <Text style={{ fontSize: 11, color: "#9ca3af", fontStyle: "italic", marginBottom: 12 }}>
+                No existing tasks to select as prerequisites.
+              </Text>
+            ) : (
+              <View style={{ maxHeight: 120, borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 8, padding: 8, marginBottom: 14 }}>
+                <ScrollView nestedScrollEnabled>
+                  {availableTasks.map((t) => {
+                    const isChecked = selectedDependencies.includes(t._id);
+                    return (
+                      <TouchableOpacity
+                        key={t._id}
+                        onPress={() => {
+                          if (isChecked) {
+                            setSelectedDependencies(selectedDependencies.filter((id) => id !== t._id));
+                          } else {
+                            setSelectedDependencies([...selectedDependencies, t._id]);
+                          }
+                        }}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          paddingVertical: 5,
+                        }}
+                      >
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
+                          <Icon
+                            name={isChecked ? "checkmark-outline" : "checkbox-outline"}
+                            size={16}
+                            color={isChecked ? "#2563eb" : "#9ca3af"}
+                          />
+                          <Text
+                            numberOfLines={1}
+                            style={{
+                              fontSize: 12,
+                              color: isChecked ? "#111827" : "#4b5563",
+                              fontWeight: isChecked ? "600" : "400",
+                            }}
+                          >
+                            {t.title}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 10, color: t.status === "done" ? "#16a34a" : "#6b7280" }}>
+                          {t.status}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
 
             <Text style={styles.label}>Labels (comma separated)</Text>
             <TextInput

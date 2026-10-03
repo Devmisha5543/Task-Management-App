@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Icon from "./Icon";
-import type { Task } from "../types/task";
+import type { Task, TaskDependency } from "../types/task";
 
 interface TaskCardProps {
   task: Task;
@@ -156,6 +156,56 @@ export default function TaskCard({
             </Text>
           </View>
         )}
+
+        {task.isRecurring && task.recurrence && task.recurrence !== "none" && (
+          <View
+            style={[
+              styles.metaBadge,
+              { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" },
+            ]}
+          >
+            <Icon name="repeat-outline" size={13} color="#2563EB" />
+            <Text style={[styles.metaBadgeText, { color: "#2563EB" }]}>
+              {task.recurrence}
+            </Text>
+          </View>
+        )}
+
+        {task.dependencies && task.dependencies.length > 0 && (() => {
+          const deps = task.dependencies as (TaskDependency | string)[];
+          const incomplete = deps.filter(
+            (d) => typeof d === "object" && d !== null && d.status !== "done"
+          ) as TaskDependency[];
+          const isBlocked = incomplete.length > 0;
+
+          if (task.status === "done") return null;
+
+          return isBlocked ? (
+            <View
+              style={[
+                styles.metaBadge,
+                { backgroundColor: "#FEF2F2", borderColor: "#FECACA" },
+              ]}
+            >
+              <Icon name="link-outline" size={13} color="#DC2626" />
+              <Text style={[styles.metaBadgeText, { color: "#DC2626", fontWeight: "700" }]}>
+                Blocked ({incomplete.length})
+              </Text>
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.metaBadge,
+                { backgroundColor: "#F0FDF4", borderColor: "#BBF7D0" },
+              ]}
+            >
+              <Icon name="link-outline" size={13} color="#16A34A" />
+              <Text style={[styles.metaBadgeText, { color: "#16A34A" }]}>
+                Clear
+              </Text>
+            </View>
+          );
+        })()}
 
         {totalSubtasks > 0 && (
           <View

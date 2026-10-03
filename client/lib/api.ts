@@ -28,10 +28,26 @@ export async function apiRequest(
     headers,
   });
 
-  const data = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  let data: any = null;
+
+  if (contentType.includes("application/json")) {
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+  } else {
+    data = await response.text();
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || "Something went wrong");
+    const errorMsg =
+      (typeof data === "object" && data !== null && data.message) ||
+      (typeof data === "string" && data.length > 0 && data.length < 200
+        ? data
+        : `Request failed with status ${response.status}`);
+    throw new Error(errorMsg);
   }
 
   return data;

@@ -18,12 +18,15 @@ export default function EditTaskModal({
   onClose,
 }: EditTaskModalProps) {
   const updateTask = useTaskStore((state) => state.updateTask);
+  const allTasks = useTaskStore((state) => state.tasks);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
+  const [recurrence, setRecurrence] = useState<"none" | "daily" | "weekly" | "monthly">("none");
+  const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const [labelsInput, setLabelsInput] = useState("");
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
@@ -37,6 +40,11 @@ export default function EditTaskModal({
       setStatus(task.status || "todo");
       setPriority(task.priority || "medium");
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "");
+      setRecurrence(task.recurrence || (task.isRecurring ? "daily" : "none"));
+      const depIds = (task.dependencies || []).map((d) =>
+        typeof d === "string" ? d : d._id
+      );
+      setSelectedDependencies(depIds);
       setLabelsInput(task.labels ? task.labels.join(", ") : "");
       setSubtasks(task.subtasks ? [...task.subtasks] : []);
       setNewSubtaskTitle("");
@@ -100,6 +108,9 @@ export default function EditTaskModal({
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       labels,
       subtasks,
+      isRecurring: recurrence !== "none",
+      recurrence,
+      dependencies: selectedDependencies,
     };
 
     try {
@@ -166,7 +177,7 @@ export default function EditTaskModal({
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Status
@@ -223,6 +234,83 @@ export default function EditTaskModal({
                 className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Recurrence <span className="text-xs text-gray-400 font-normal">(Auto-spawns)</span>
+              </label>
+              <select
+                value={recurrence}
+                onChange={(e) =>
+                  setRecurrence(e.target.value as "none" | "daily" | "weekly" | "monthly")
+                }
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+              >
+                <option value="none">Does not repeat</option>
+                <option value="daily">Daily (+1 day)</option>
+                <option value="weekly">Weekly (+7 days)</option>
+                <option value="monthly">Monthly (+1 month)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Task Dependencies / Prerequisites */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Prerequisites & Dependencies{" "}
+              {selectedDependencies.length > 0 && (
+                <span className="text-xs font-normal text-blue-600">
+                  ({selectedDependencies.length} selected)
+                </span>
+              )}
+            </label>
+            <p className="text-xs text-gray-500 mb-1">
+              Prerequisite tasks that must be marked &quot;Done&quot; before this task can be marked &quot;Done&quot;.
+            </p>
+            {allTasks.filter((t) => t._id !== task._id).length === 0 ? (
+              <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2.5 text-xs text-gray-400 italic">
+                No other tasks in workspace to select as prerequisites.
+              </div>
+            ) : (
+              <div className="max-h-28 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50 p-2 space-y-1">
+                {allTasks
+                  .filter((t) => t._id !== task._id)
+                  .map((t) => {
+                    const isChecked = selectedDependencies.includes(t._id);
+                    return (
+                      <label
+                        key={t._id}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-white text-xs cursor-pointer transition"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            if (isChecked) {
+                              setSelectedDependencies(selectedDependencies.filter((id) => id !== t._id));
+                            } else {
+                              setSelectedDependencies([...selectedDependencies, t._id]);
+                            }
+                          }}
+                          className="rounded border-gray-300 text-black focus:ring-black"
+                        />
+                        <span className="font-medium text-gray-800 line-clamp-1 flex-1">
+                          {t.title}
+                        </span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded capitalize ${
+                            t.status === "done"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-gray-200 text-gray-700"
+                          }`}
+                        >
+                          {t.status}
+                        </span>
+                      </label>
+                    );
+                  })}
+              </div>
+            )}
           </div>
 
           <div>

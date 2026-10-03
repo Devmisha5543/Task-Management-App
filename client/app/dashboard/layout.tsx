@@ -10,6 +10,7 @@ import Button from "@/components/ui/Button";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { useAuthStore } from "@/store/authStore";
 import Icon from "@/components/ui/Icon";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 export default function DashboardLayout({
   children,
@@ -116,7 +117,8 @@ export default function DashboardLayout({
                   Workspace
                 </h2>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <NotificationBell />
                   <Link
                     href="/dashboard/profile"
                     className="flex items-center gap-3 rounded-lg p-1 hover:bg-gray-50 transition"

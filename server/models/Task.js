@@ -94,6 +94,28 @@ const taskSchema = new mongoose.Schema(
     subtasks: {
       type: [subtaskSchema],
       default: []
+    },
+
+    dependencies: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Task"
+      }
+    ],
+
+    isRecurring: {
+      type: Boolean,
+      default: false
+    },
+
+    recurrence: {
+      type: String,
+      enum: ["none", "daily", "weekly", "monthly"],
+      default: "none"
+    },
+
+    nextRecurrenceDate: {
+      type: Date
     }
   },
   {

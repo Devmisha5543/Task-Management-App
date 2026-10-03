@@ -16,6 +16,7 @@ import {
   getTasks,
   updateTask,
 } from "../lib/taskApi";
+import { getNotifications } from "../lib/notificationApi";
 import { setAuthToken } from "../lib/api";
 import type { CreateTaskData, Task } from "../types/task";
 import type { User } from "../types/auth";
@@ -30,6 +31,8 @@ import ShareTaskModal from "../components/ShareTaskModal";
 import TaskAttachmentsModal from "../components/TaskAttachmentsModal";
 import TaskCommentsModal from "../components/TaskCommentsModal";
 import TaskActivityModal from "../components/TaskActivityModal";
+import NotificationModal from "../components/NotificationModal";
+import AnalyticsModal from "../components/AnalyticsModal";
 
 interface HomeScreenProps {
   user: User;
@@ -61,12 +64,23 @@ export default function HomeScreen({
   const [attachmentTask, setAttachmentTask] = useState<Task | null>(null);
   const [commentingTask, setCommentingTask] = useState<Task | null>(null);
   const [activityTask, setActivityTask] = useState<Task | null>(null);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
 
   const fetchMobileTasks = async () => {
     try {
       setError(null);
       const fetched = await getTasks();
       setTasks(fetched);
+
+      // Also refresh unread notification count
+      try {
+        const notifData = await getNotifications();
+        setUnreadNotifs(notifData.unreadCount || 0);
+      } catch {
+        // quiet error
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -204,10 +218,35 @@ export default function HomeScreen({
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleLogoutPress} style={styles.logoutBtn}>
-          <Icon name="log-out-outline" size={14} color="#374151" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRightActions}>
+          <TouchableOpacity
+            onPress={() => setIsAnalyticsOpen(true)}
+            style={styles.headerIconBtn}
+            accessibilityLabel="Analytics & Export"
+          >
+            <Icon name="stats-chart-outline" size={17} color="#374151" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setIsNotifOpen(true)}
+            style={styles.headerIconBtn}
+            accessibilityLabel="Notifications"
+          >
+            <Icon name="notifications-outline" size={17} color="#374151" />
+            {unreadNotifs > 0 && (
+              <View style={styles.headerNotifBadge}>
+                <Text style={styles.headerNotifBadgeText}>
+                  {unreadNotifs > 9 ? "9+" : unreadNotifs}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleLogoutPress} style={styles.logoutBtn}>
+            <Icon name="log-out-outline" size={14} color="#374151" />
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -302,6 +341,7 @@ export default function HomeScreen({
         visible={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onSubmit={handleCreateTask}
+        availableTasks={tasks}
       />
 
       <EditTaskModal
@@ -309,6 +349,7 @@ export default function HomeScreen({
         visible={!!editingTask}
         onClose={() => setEditingTask(null)}
         onSubmit={handleEditSubmit}
+        availableTasks={tasks}
       />
 
       <ShareTaskModal
@@ -335,6 +376,18 @@ export default function HomeScreen({
         task={activityTask}
         visible={!!activityTask}
         onClose={() => setActivityTask(null)}
+      />
+
+      <NotificationModal
+        isOpen={isNotifOpen}
+        onClose={() => setIsNotifOpen(false)}
+        onUnreadCountChange={setUnreadNotifs}
+      />
+
+      <AnalyticsModal
+        isOpen={isAnalyticsOpen}
+        onClose={() => setIsAnalyticsOpen(false)}
+        tasks={tasks}
       />
     </SafeAreaView>
   );
@@ -404,6 +457,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#374151",
+  },
+  headerRightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  headerIconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  headerNotifBadge: {
+    position: "absolute",
+    top: -3,
+    right: -3,
+    backgroundColor: "#DC2626",
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  headerNotifBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 9,
+    fontWeight: "700",
   },
   errorText: {
     color: "#EF4444",

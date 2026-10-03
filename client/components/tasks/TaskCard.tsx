@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTaskStore } from "@/store/taskStore";
-import type { Task } from "@/types/task";
+import type { Task, TaskDependency } from "@/types/task";
 
 import Icon from "@/components/ui/Icon";
 
@@ -30,9 +30,11 @@ export default function TaskCard({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleStatusChange = async (newStatus: "todo" | "in-progress" | "done") => {
     try {
+      setActionError(null);
       await updateTask(task._id, {
         title: task.title,
         description: task.description,
@@ -40,8 +42,10 @@ export default function TaskCard({
         priority: task.priority,
         labels: task.labels,
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to update status:", err);
+      setActionError(err instanceof Error ? err.message : "Failed to update status");
+      setTimeout(() => setActionError(null), 5000);
     }
   };
 
@@ -167,6 +171,44 @@ export default function TaskCard({
                 {dueDateInfo.text}
               </span>
             )}
+
+            {task.isRecurring && task.recurrence && task.recurrence !== "none" && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 capitalize"
+                title={`Recurring (${task.recurrence}): Next cycle will auto-spawn upon completion.`}
+              >
+                <Icon name="repeat" className="w-3 h-3" />
+                {task.recurrence}
+              </span>
+            )}
+
+            {task.dependencies && task.dependencies.length > 0 && (() => {
+              const deps = task.dependencies as (TaskDependency | string)[];
+              const incompleteDeps = deps.filter(
+                (d) => typeof d === "object" && d !== null && d.status !== "done"
+              ) as TaskDependency[];
+              const isBlocked = incompleteDeps.length > 0;
+
+              if (task.status === "done") return null;
+
+              return isBlocked ? (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700"
+                  title={`Blocked by ${incompleteDeps.length} task(s): ${incompleteDeps.map((d) => d.title).join(", ")}`}
+                >
+                  <Icon name="link" className="w-3 h-3" />
+                  Blocked ({incompleteDeps.length})
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                  title="All prerequisite dependencies are completed"
+                >
+                  <Icon name="link" className="w-3 h-3" />
+                  Prerequisites clear
+                </span>
+              );
+            })()}
           </div>
 
           <div className="flex items-center gap-1">
@@ -232,6 +274,14 @@ export default function TaskCard({
             </button>
           </div>
         </div>
+
+        {/* Action / Blocker Error Banner */}
+        {actionError && (
+          <div className="mt-2.5 rounded-lg bg-rose-50 border border-rose-200 p-2 text-xs font-semibold text-rose-700 flex items-center gap-1.5">
+            <Icon name="alert-circle" className="h-4 w-4 shrink-0 text-rose-600" />
+            <span>{actionError}</span>
+          </div>
+        )}
 
         {/* Task Title */}
         <h3 className="mt-3 font-semibold text-gray-900 group-hover:text-black">

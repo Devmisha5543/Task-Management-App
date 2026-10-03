@@ -18,12 +18,15 @@ export default function CreateTaskModal({
   initialDueDate,
 }: CreateTaskModalProps) {
   const createTask = useTaskStore((state) => state.createTask);
+  const allTasks = useTaskStore((state) => state.tasks);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"todo" | "in-progress" | "done">("todo");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
+  const [recurrence, setRecurrence] = useState<"none" | "daily" | "weekly" | "monthly">("none");
+  const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const [labelsInput, setLabelsInput] = useState("");
   const [subtasks, setSubtasks] = useState<{ title: string; completed: boolean }[]>([]);
   const [subtaskInput, setSubtaskInput] = useState("");
@@ -72,6 +75,9 @@ export default function CreateTaskModal({
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       labels,
       subtasks: subtasks.length > 0 ? subtasks : undefined,
+      isRecurring: recurrence !== "none",
+      recurrence: recurrence,
+      dependencies: selectedDependencies.length > 0 ? selectedDependencies : undefined,
     };
 
     try {
@@ -82,6 +88,8 @@ export default function CreateTaskModal({
       setStatus("todo");
       setPriority("medium");
       setDueDate("");
+      setRecurrence("none");
+      setSelectedDependencies([]);
       setLabelsInput("");
       setSubtasks([]);
       setSubtaskInput("");
@@ -145,7 +153,7 @@ export default function CreateTaskModal({
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Status
@@ -191,6 +199,81 @@ export default function CreateTaskModal({
                 className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Recurrence <span className="text-xs text-gray-400 font-normal">(Auto-spawns)</span>
+              </label>
+              <select
+                value={recurrence}
+                onChange={(e) =>
+                  setRecurrence(e.target.value as "none" | "daily" | "weekly" | "monthly")
+                }
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none bg-white"
+              >
+                <option value="none">Does not repeat</option>
+                <option value="daily">Daily (+1 day)</option>
+                <option value="weekly">Weekly (+7 days)</option>
+                <option value="monthly">Monthly (+1 month)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Task Dependencies / Prerequisites */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Prerequisites & Dependencies{" "}
+              {selectedDependencies.length > 0 && (
+                <span className="text-xs font-normal text-blue-600">
+                  ({selectedDependencies.length} selected)
+                </span>
+              )}
+            </label>
+            <p className="text-xs text-gray-500 mb-1">
+              Prerequisite tasks that must be marked &quot;Done&quot; before this task can be completed.
+            </p>
+            {allTasks.length === 0 ? (
+              <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2.5 text-xs text-gray-400 italic">
+                No existing tasks to select as prerequisites.
+              </div>
+            ) : (
+              <div className="max-h-28 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50 p-2 space-y-1">
+                {allTasks.map((t) => {
+                  const isChecked = selectedDependencies.includes(t._id);
+                  return (
+                    <label
+                      key={t._id}
+                      className="flex items-center gap-2 p-1.5 rounded hover:bg-white text-xs cursor-pointer transition"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          if (isChecked) {
+                            setSelectedDependencies(selectedDependencies.filter((id) => id !== t._id));
+                          } else {
+                            setSelectedDependencies([...selectedDependencies, t._id]);
+                          }
+                        }}
+                        className="rounded border-gray-300 text-black focus:ring-black"
+                      />
+                      <span className="font-medium text-gray-800 line-clamp-1 flex-1">
+                        {t.title}
+                      </span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded capitalize ${
+                          t.status === "done"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-gray-200 text-gray-700"
+                        }`}
+                      >
+                        {t.status}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div>

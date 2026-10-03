@@ -38,7 +38,25 @@ const createTaskSchema = z.object({
         completedAt: z.union([z.string(), z.date()]).nullable().optional()
       })
     )
+    .optional(),
+
+  dependencies: z
+    .array(z.string())
+    .optional(),
+
+  isRecurring: z
+    .boolean()
+    .optional(),
+
+  recurrence: z
+    .enum(["none", "daily", "weekly", "monthly"])
+    .optional(),
+
+  nextRecurrenceDate: z
+    .string()
+    .nullable()
     .optional()
+    .or(z.literal(""))
 });
 
 const updateTaskSchema = createTaskSchema.partial();

@@ -1,4 +1,4 @@
 git add .
-git commit -m "feat: Add interactive Calendar & Timeline views with scheduling, unscheduled task tray, and clean comment-free code"
+git commit -m "feat: Implement In-App Notifications, Task Dependencies & Recurrence, and Productivity Analytics & Export across Web and Mobile"
 git push origin main
-Write-Host "`nAll Calendar & Timeline feature changes successfully pushed to main!" -ForegroundColor Green
+Write-Host "`nFeatures 2, 3, and 4 successfully pushed to main!" -ForegroundColor Green

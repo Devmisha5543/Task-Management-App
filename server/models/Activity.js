@@ -30,6 +30,7 @@ const activitySchema = new mongoose.Schema(
         "completed_subtask",
         "uncompleted_subtask",
         "deleted_subtask",
+        "recurrence_spawned",
       ],
     },
     details: {

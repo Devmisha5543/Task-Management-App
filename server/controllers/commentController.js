@@ -1,5 +1,6 @@
 const Task = require("../models/Task");
 const Comment = require("../models/Comment");
+const Notification = require("../models/Notification");
 const logActivity = require("../utils/activityLogger");
 
 // Add a comment to a task
@@ -40,6 +41,25 @@ const addComment = async (req, res) => {
 
     // Populate user details for response
     await comment.populate("user", "username email profileImage");
+
+    // Notify other task members about the comment
+    try {
+      const otherMembers = task.members.filter(
+        (m) => m.user.toString() !== req.userId.toString()
+      );
+      for (const member of otherMembers) {
+        await Notification.create({
+          recipient: member.user,
+          sender: req.userId,
+          task: taskId,
+          type: "new_comment",
+          title: `New Comment on: ${task.title}`,
+          message: `${comment.user?.username || "A teammate"} commented: "${text.trim().substring(0, 60)}"`,
+        });
+      }
+    } catch (notifErr) {
+      console.error("Failed to create comment notification:", notifErr);
+    }
 
     res.status(201).json({
       message: "Comment added successfully",

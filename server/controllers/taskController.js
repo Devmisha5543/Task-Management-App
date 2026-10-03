@@ -1,5 +1,6 @@
 const Task = require("../models/Task");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 const logActivity = require("../utils/activityLogger");
 
 const {
@@ -57,8 +58,10 @@ const createTask = async (req, res) => {
 const getTasks = async (req, res) => {
   try {
     const tasks = await Task.find({
-  "members.user": req.userId
-}).sort({ createdAt: -1 });
+      "members.user": req.userId
+    })
+      .populate("dependencies", "title status priority")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       tasks
@@ -95,7 +98,23 @@ const updateTask = async (req, res) => {
       });
     }
 
-    const oldStatus = existingTask.status;
+    // Validate dependencies if trying to mark task as done
+    if (validatedData.status === "done" && existingTask.dependencies && existingTask.dependencies.length > 0) {
+      const dependentTasks = await Task.find({
+        _id: { $in: existingTask.dependencies }
+      });
+      const uncompletedDeps = dependentTasks.filter((d) => d.status !== "done");
+      if (uncompletedDeps.length > 0) {
+        return res.status(400).json({
+          message: `Cannot mark task as done: blocked by prerequisite task(s): ${uncompletedDeps.map((d) => d.title).join(", ")}`,
+          blockedBy: uncompletedDeps.map((d) => ({
+            _id: d._id,
+            title: d.title,
+            status: d.status
+          }))
+        });
+      }
+    }
 
     const task = await Task.findByIdAndUpdate(
       req.params.id,
@@ -104,7 +123,7 @@ const updateTask = async (req, res) => {
         new: true,
         runValidators: true
       }
-    );
+    ).populate("dependencies", "title status priority");
 
     if (validatedData.status && validatedData.status !== oldStatus) {
       await logActivity({
@@ -120,6 +139,60 @@ const updateTask = async (req, res) => {
         action: "updated_details",
         details: { updatedFields: Object.keys(validatedData) }
       });
+    }
+
+    // If a recurring task is completed, automatically schedule the next occurrence
+    if (
+      validatedData.status === "done" &&
+      oldStatus !== "done" &&
+      task.isRecurring &&
+      task.recurrence &&
+      task.recurrence !== "none"
+    ) {
+      try {
+        const baseDate = existingTask.dueDate ? new Date(existingTask.dueDate) : new Date();
+        let nextDueDate = new Date(baseDate);
+
+        if (task.recurrence === "daily") {
+          nextDueDate.setDate(nextDueDate.getDate() + 1);
+        } else if (task.recurrence === "weekly") {
+          nextDueDate.setDate(nextDueDate.getDate() + 7);
+        } else if (task.recurrence === "monthly") {
+          nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+        }
+
+        const nextTask = await Task.create({
+          title: task.title,
+          description: task.description,
+          status: "todo",
+          priority: task.priority,
+          dueDate: nextDueDate,
+          labels: task.labels || [],
+          createdBy: task.createdBy,
+          members: task.members || [{ user: req.userId, role: "owner" }],
+          isRecurring: true,
+          recurrence: task.recurrence,
+          nextRecurrenceDate: nextDueDate,
+          subtasks: (task.subtasks || []).map((s) => ({ title: s.title, completed: false }))
+        });
+
+        await logActivity({
+          taskId: nextTask._id,
+          userId: req.userId,
+          action: "recurrence_spawned",
+          details: { previousTaskId: task._id, recurrence: task.recurrence, nextDueDate }
+        });
+
+        await Notification.create({
+          recipient: req.userId,
+          task: nextTask._id,
+          type: "recurrence_spawned",
+          title: `Recurring Task Scheduled: ${nextTask.title}`,
+          message: `A new cycle for "${nextTask.title}" has been created for ${nextDueDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })}.`
+        });
+      } catch (recErr) {
+        console.error("Failed to spawn recurring task cycle:", recErr);
+      }
     }
 
     res.status(200).json({
@@ -225,6 +298,20 @@ const addTaskMember = async (req, res) => {
       action: "added_member",
       details: { addedUserEmail: email, role }
     });
+
+    // Notify the added user
+    try {
+      await Notification.create({
+        recipient: user._id,
+        sender: req.userId,
+        task: task._id,
+        type: "task_shared",
+        title: `Task Shared with You: ${task.title}`,
+        message: `You were added as a ${role} to "${task.title}".`
+      });
+    } catch (notifErr) {
+      console.error("Failed to send task share notification:", notifErr);
+    }
 
     res.status(200).json({
       message: "User added to task successfully",
@@ -497,6 +584,81 @@ const deleteSubtask = async (req, res) => {
   }
 };
 
+const getTaskAnalytics = async (req, res) => {
+  try {
+    const tasks = await Task.find({ "members.user": req.userId });
+
+    const total = tasks.length;
+    const todo = tasks.filter((t) => t.status === "todo").length;
+    const inProgress = tasks.filter((t) => t.status === "in-progress").length;
+    const done = tasks.filter((t) => t.status === "done").length;
+    const completionRate = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    const now = new Date();
+    const overdue = tasks.filter(
+      (t) => t.status !== "done" && t.dueDate && new Date(t.dueDate) < now
+    ).length;
+
+    const highPriority = tasks.filter((t) => t.priority === "high").length;
+    const mediumPriority = tasks.filter((t) => t.priority === "medium").length;
+    const lowPriority = tasks.filter((t) => t.priority === "low").length;
+
+    // 7-day velocity
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    const completedThisWeek = tasks.filter(
+      (t) => t.status === "done" && new Date(t.updatedAt) >= sevenDaysAgo
+    ).length;
+    const completedLastWeek = tasks.filter(
+      (t) =>
+        t.status === "done" &&
+        new Date(t.updatedAt) >= fourteenDaysAgo &&
+        new Date(t.updatedAt) < sevenDaysAgo
+    ).length;
+
+    // Subtask stats
+    let totalSubtasks = 0;
+    let completedSubtasks = 0;
+    for (const t of tasks) {
+      if (t.subtasks && t.subtasks.length > 0) {
+        totalSubtasks += t.subtasks.length;
+        completedSubtasks += t.subtasks.filter((s) => s.completed).length;
+      }
+    }
+    const subtaskCompletionRate =
+      totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+
+    res.status(200).json({
+      analytics: {
+        total,
+        todo,
+        inProgress,
+        done,
+        completionRate,
+        overdue,
+        priorityBreakdown: {
+          high: highPriority,
+          medium: mediumPriority,
+          low: lowPriority
+        },
+        velocity: {
+          completedThisWeek,
+          completedLastWeek
+        },
+        subtasks: {
+          total: totalSubtasks,
+          completed: completedSubtasks,
+          rate: subtaskCompletionRate
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Get task analytics error:", error);
+    res.status(500).json({ message: "Server error while calculating analytics" });
+  }
+};
+
 module.exports = {
   createTask,
   getTasks,
@@ -507,5 +669,6 @@ module.exports = {
   removeTaskMember,
   addSubtask,
   updateSubtask,
-  deleteSubtask
+  deleteSubtask,
+  getTaskAnalytics
 };
