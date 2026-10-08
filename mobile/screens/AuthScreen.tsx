@@ -9,9 +9,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { mobileApiRequest, setAuthToken } from "../lib/api";
+import {
+  mobileApiRequest,
+  setAuthToken,
+  getEffectiveApiUrl,
+  setCustomApiUrl,
+  DEFAULT_API_URL,
+} from "../lib/api";
 import type { User } from "../types/auth";
 import Icon from "../components/Icon";
 
@@ -40,6 +47,20 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
   const [resendSuccess, setResendSuccess] = useState(false);
 
   const [loading, setLoading] = useState(false);
+
+  // Server Configuration Modal State
+  const [isServerModalOpen, setIsServerModalOpen] = useState(false);
+  const [currentServerUrl, setCurrentServerUrl] = useState(DEFAULT_API_URL);
+  const [customServerInput, setCustomServerInput] = useState(DEFAULT_API_URL);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  useEffect(() => {
+    getEffectiveApiUrl().then((url) => {
+      setCurrentServerUrl(url);
+      setCustomServerInput(url);
+    });
+  }, []);
 
   // Lockout countdown timer
   useEffect(() => {
@@ -186,6 +207,59 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
     setTimeout(() => setResendSuccess(false), 5000);
   };
 
+  const handleSaveServerUrl = async () => {
+    await setCustomApiUrl(customServerInput);
+    const updated = await getEffectiveApiUrl();
+    setCurrentServerUrl(updated);
+    setGeneralError(null);
+    setIsServerModalOpen(false);
+  };
+
+  const handleResetServerUrl = async () => {
+    await setCustomApiUrl(null);
+    setCurrentServerUrl(DEFAULT_API_URL);
+    setCustomServerInput(DEFAULT_API_URL);
+    setGeneralError(null);
+  };
+
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    setTestResult(null);
+    try {
+      let targetUrl = customServerInput.trim().replace(/\/$/, "");
+      if (!targetUrl.endsWith("/api")) {
+        targetUrl = `${targetUrl}/api`;
+      }
+      const res = await fetch(`${targetUrl}/health`, { method: "GET" });
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.database === "connected") {
+          setTestResult({
+            success: true,
+            message: "Connected! Server and MongoDB database are fully operational.",
+          });
+        } else {
+          setTestResult({
+            success: false,
+            message:
+              "Server reachable, but MongoDB is disconnected. Please whitelist 0.0.0.0/0 in MongoDB Atlas Network Access.",
+          });
+        }
+      } else {
+        setTestResult({ success: false, message: `Server returned error status ${res.status}` });
+      }
+    } catch (err: unknown) {
+      setTestResult({
+        success: false,
+        message:
+          err instanceof Error
+            ? `${err.message}. If using cellular/different Wi-Fi, run a public tunnel (npx localtunnel --port 5001).`
+            : "Failed to reach server URL",
+      });
+    } finally {
+      setTestingConnection(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -198,7 +272,7 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Grounded Top-Left Header with Compact ~24px Logo - Fix 1 & 5 */}
+          {/* Grounded Top-Left Header with Compact ~24px Logo & Server Config Button */}
           <View style={styles.headerBar}>
             <View style={styles.logoRow}>
               <View style={styles.logoIcon}>
@@ -206,6 +280,19 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
               </View>
               <Text style={styles.logoText}>TaskFlow</Text>
             </View>
+
+            <TouchableOpacity
+              onPress={() => {
+                setCustomServerInput(currentServerUrl);
+                setTestResult(null);
+                setIsServerModalOpen(true);
+              }}
+              style={styles.serverSettingsBtn}
+              activeOpacity={0.7}
+            >
+              <Icon name="settings-outline" size={14} color="#4B5563" />
+              <Text style={styles.serverSettingsBtnText}>Server IP</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Value-Driven Header Copy (No generic "Welcome back") - Fix 3 */}
@@ -221,6 +308,86 @@ export default function AuthScreen({ onLoginSuccess }: AuthScreenProps) {
                 : "Start organizing sprints, collaborating with your team, and tracking deliverables."}
             </Text>
           </View>
+
+          {/* Server Config Modal */}
+          <Modal
+            visible={isServerModalOpen}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setIsServerModalOpen(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalCard}>
+                <View style={styles.modalHeaderRow}>
+                  <Text style={styles.modalTitle}>Server Connection URL</Text>
+                  <TouchableOpacity onPress={() => setIsServerModalOpen(false)}>
+                    <Icon name="close" size={20} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={styles.modalDesc}>
+                  Configure the backend API endpoint. You can use your local IP, a public tunnel (e.g. Localtunnel/Ngrok), or a cloud hosted URL (e.g. Render/Railway) to connect from any network.
+                </Text>
+
+                <TextInput
+                  style={styles.serverInput}
+                  value={customServerInput}
+                  onChangeText={setCustomServerInput}
+                  placeholder="http://10.195.131.248:5001/api"
+                  placeholderTextColor="#9CA3AF"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+
+                {testResult && (
+                  <View
+                    style={[
+                      styles.testResultBox,
+                      testResult.success ? styles.testSuccessBox : styles.testErrorBox,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.testResultText,
+                        testResult.success ? styles.testSuccessText : styles.testErrorText,
+                      ]}
+                    >
+                      {testResult.success ? "✓ " : "⚠ "}
+                      {testResult.message}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.modalActionRow}>
+                  <TouchableOpacity
+                    style={styles.testBtn}
+                    onPress={handleTestConnection}
+                    disabled={testingConnection}
+                  >
+                    {testingConnection ? (
+                      <ActivityIndicator size="small" color="#4B5563" />
+                    ) : (
+                      <Text style={styles.testBtnText}>Test Ping</Text>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.resetBtn}
+                    onPress={handleResetServerUrl}
+                  >
+                    <Text style={styles.resetBtnText}>Reset Default</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.saveServerBtn}
+                    onPress={handleSaveServerUrl}
+                  >
+                    <Text style={styles.saveServerBtnText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
 
           {/* SPECIFIC ERROR STATES - Fix 4 */}
 

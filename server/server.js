@@ -31,7 +31,14 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+  const mongoose = require("mongoose");
+  const dbStates = ["disconnected", "connected", "connecting", "disconnecting"];
+  const dbState = dbStates[mongoose.connection.readyState] || "unknown";
+  res.json({
+    status: "ok",
+    database: dbState,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.get("/", (req, res) => {

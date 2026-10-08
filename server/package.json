@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "tunnel": "npx localtunnel --port 5001",
+    "test-db": "node test-db.js"
   },
   "keywords": [],
   "author": "",

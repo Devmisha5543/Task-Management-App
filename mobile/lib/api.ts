@@ -7,7 +7,7 @@ const getDefaultBaseUrl = () => {
     return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
   }
 
-  let host = "192.168.1.5";
+  let host = "10.195.131.248";
 
   if (Platform.OS === "web") {
     host =
