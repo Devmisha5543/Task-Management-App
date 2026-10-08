@@ -11,6 +11,7 @@ export interface TaskComment {
     _id: string;
     username: string;
     email: string;
+    profilePhoto?: string;
     profileImage?: string;
   };
   createdAt: string;

@@ -10,6 +10,7 @@ import {
   clearAllNotifications,
 } from "@/lib/notificationApi";
 import type { NotificationItem } from "@/types/notification";
+import { useSocket } from "@/context/SocketContext";
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const popoverRef = useRef<HTMLDivElement>(null);
+  const { socket } = useSocket();
 
   const fetchNotifs = async () => {
     try {
@@ -34,10 +36,61 @@ export default function NotificationBell() {
 
   useEffect(() => {
     fetchNotifs();
-    // Poll every 45 seconds for active background deadline/comment alerts
-    const interval = setInterval(fetchNotifs, 45000);
-    return () => clearInterval(interval);
   }, []);
+
+  // Listen for real-time WebSocket push notifications
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewNotification = (newNotif: NotificationItem) => {
+      setNotifications((prev) => {
+        if (prev.some((n) => n._id === newNotif._id)) return prev;
+        return [newNotif, ...prev];
+      });
+      setUnreadCount((c) => c + 1);
+    };
+
+    const handleNotificationRead = (data: { notificationId: string }) => {
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === data.notificationId ? { ...n, read: true } : n))
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+    };
+
+    const handleAllRead = () => {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    };
+
+    const handleNotificationDeleted = (data: { notificationId: string }) => {
+      setNotifications((prev) => {
+        const item = prev.find((n) => n._id === data.notificationId);
+        if (item && !item.read) {
+          setUnreadCount((c) => Math.max(0, c - 1));
+        }
+        return prev.filter((n) => n._id !== data.notificationId);
+      });
+    };
+
+    const handleAllCleared = () => {
+      setNotifications([]);
+      setUnreadCount(0);
+    };
+
+    socket.on("notification:new", handleNewNotification);
+    socket.on("notification:read", handleNotificationRead);
+    socket.on("notification:all_read", handleAllRead);
+    socket.on("notification:deleted", handleNotificationDeleted);
+    socket.on("notification:all_cleared", handleAllCleared);
+
+    return () => {
+      socket.off("notification:new", handleNewNotification);
+      socket.off("notification:read", handleNotificationRead);
+      socket.off("notification:all_read", handleAllRead);
+      socket.off("notification:deleted", handleNotificationDeleted);
+      socket.off("notification:all_cleared", handleAllCleared);
+    };
+  }, [socket]);
 
   // Close dropdown on outside click
   useEffect(() => {

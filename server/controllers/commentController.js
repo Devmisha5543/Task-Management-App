@@ -2,6 +2,7 @@ const Task = require("../models/Task");
 const Comment = require("../models/Comment");
 const Notification = require("../models/Notification");
 const logActivity = require("../utils/activityLogger");
+const { emitToUser, emitToTask, emitGlobal } = require("../socket");
 
 // Add a comment to a task
 const addComment = async (req, res) => {
@@ -30,7 +31,11 @@ const addComment = async (req, res) => {
     });
 
     // Increment commentsCount in Task
-    await Task.findByIdAndUpdate(taskId, { $inc: { commentsCount: 1 } });
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      { $inc: { commentsCount: 1 } },
+      { new: true }
+    );
 
     await logActivity({
       taskId,
@@ -40,7 +45,11 @@ const addComment = async (req, res) => {
     });
 
     // Populate user details for response
-    await comment.populate("user", "username email profileImage");
+    await comment.populate("user", "username email profilePhoto");
+
+    // Real-time broadcast comment to all viewers of this task
+    emitToTask(taskId, "comment:created", { taskId, comment });
+    emitGlobal("task:updated", { task: updatedTask });
 
     // Notify other task members about the comment
     try {
@@ -48,13 +57,25 @@ const addComment = async (req, res) => {
         (m) => m.user.toString() !== req.userId.toString()
       );
       for (const member of otherMembers) {
-        await Notification.create({
+        const notif = await Notification.create({
           recipient: member.user,
           sender: req.userId,
           task: taskId,
           type: "new_comment",
           title: `New Comment on: ${task.title}`,
           message: `${comment.user?.username || "A teammate"} commented: "${text.trim().substring(0, 60)}"`,
+        });
+
+        emitToUser(member.user.toString(), "notification:new", {
+          ...notif.toObject(),
+          sender: {
+            username: comment.user?.username,
+            profilePhoto: comment.user?.profilePhoto
+          },
+          task: {
+            _id: task._id,
+            title: task.title
+          }
         });
       }
     } catch (notifErr) {
@@ -87,7 +108,7 @@ const getTaskComments = async (req, res) => {
     }
 
     const comments = await Comment.find({ task: taskId })
-      .populate("user", "username email profileImage")
+      .populate("user", "username email profilePhoto")
       .sort({ createdAt: 1 });
 
     res.status(200).json({ comments });
@@ -123,7 +144,14 @@ const deleteComment = async (req, res) => {
     await Comment.findByIdAndDelete(commentId);
 
     // Decrement commentsCount in Task
-    await Task.findByIdAndUpdate(taskId, { $inc: { commentsCount: -1 } });
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      { $inc: { commentsCount: -1 } },
+      { new: true }
+    );
+
+    emitToTask(taskId, "comment:deleted", { taskId, commentId });
+    emitGlobal("task:updated", { task: updatedTask });
 
     res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
@@ -137,3 +165,4 @@ module.exports = {
   getTaskComments,
   deleteComment
 };
+

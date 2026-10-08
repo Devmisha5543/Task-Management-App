@@ -329,4 +329,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
+  emptyText: {
+    textAlign: "center",
+    color: "#6B7280",
+    fontSize: 13,
+    paddingVertical: 20,
+  },
 });

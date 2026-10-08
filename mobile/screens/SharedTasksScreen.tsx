@@ -158,7 +158,7 @@ export default function SharedTasksScreen({
     }
   };
 
-  const handleEditSubmit = async (id: string, data: CreateTaskData) => {
+  const handleEditSubmit = async (id: string, data: Partial<CreateTaskData>) => {
     const updated = await updateTask(id, data);
     setTasks((prev) => prev.map((t) => (t._id === id ? updated : t)));
   };

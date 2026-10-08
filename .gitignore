@@ -13,3 +13,5 @@ mobile/eas.json
 *.apk
 client/public/downloads/
 client/app/api/download/
+powershell.cmd
+**/powershell.cmd

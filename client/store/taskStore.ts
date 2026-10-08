@@ -41,6 +41,9 @@ interface TaskState {
     completed: boolean
   ) => Promise<Task>;
   deleteSubtask: (taskId: string, subtaskId: string) => Promise<Task>;
+  onSocketTaskCreated: (task: Task) => void;
+  onSocketTaskUpdated: (task: Task) => void;
+  onSocketTaskDeleted: (taskId: string) => void;
 }
 
 export const useTaskStore = create<TaskState>((set) => ({
@@ -294,5 +297,30 @@ export const useTaskStore = create<TaskState>((set) => ({
       });
       throw error;
     }
+  },
+
+  onSocketTaskCreated: (task) => {
+    set((state) => {
+      if (state.tasks.some((t) => t._id === task._id)) {
+        return {
+          tasks: state.tasks.map((t) => (t._id === task._id ? task : t)),
+        };
+      }
+      return {
+        tasks: [task, ...state.tasks],
+      };
+    });
+  },
+
+  onSocketTaskUpdated: (task) => {
+    set((state) => ({
+      tasks: state.tasks.map((t) => (t._id === task._id ? { ...t, ...task } : t)),
+    }));
+  },
+
+  onSocketTaskDeleted: (taskId) => {
+    set((state) => ({
+      tasks: state.tasks.filter((t) => t._id !== taskId),
+    }));
   },
 }));

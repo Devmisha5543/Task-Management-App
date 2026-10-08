@@ -5,7 +5,7 @@ import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 
 export default function MobileAppPage() {
-  const [activeTab, setActiveTab] = useState<"expo" | "pwa">("expo");
+  const [activeTab, setActiveTab] = useState<"apk" | "expo" | "pwa">("apk");
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, id: string) => {
@@ -33,13 +33,26 @@ export default function MobileAppPage() {
             TaskFlow on Android &amp; iPhone
           </h1>
           <p className="mt-1.5 text-sm text-gray-600 dark:text-zinc-300">
-            Take your tasks, kanban boards, and deadlines anywhere with our native mobile app and PWA.
+            Take your tasks, kanban boards, and deadlines anywhere with our standalone APK, native Expo app, and PWA.
           </p>
         </div>
       </div>
 
       {/* Method Switcher Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-zinc-800 pb-3">
+        <button
+          type="button"
+          onClick={() => setActiveTab("apk")}
+          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold transition-all ${
+            activeTab === "apk"
+              ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
+              : "bg-white dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 border border-gray-200 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700"
+          }`}
+        >
+          <Icon name="download" className="h-4 w-4 text-emerald-500" />
+          <span>1. Standalone Android APK (Direct Download)</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveTab("expo")}
@@ -50,7 +63,7 @@ export default function MobileAppPage() {
           }`}
         >
           <Icon name="smartphone" className="h-4 w-4" />
-          <span>1. Native App via Expo Go (iOS &amp; Android)</span>
+          <span>2. Native App via Expo Go (iOS &amp; Android)</span>
         </button>
 
         <button
@@ -63,9 +76,131 @@ export default function MobileAppPage() {
           }`}
         >
           <Icon name="sparkles" className="h-4 w-4" />
-          <span>2. 1-Click Install to Home Screen (PWA)</span>
+          <span>3. 1-Click Install to Home Screen (PWA)</span>
         </button>
       </div>
+
+      {/* 1. Standalone Android APK */}
+      {activeTab === "apk" && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sm:p-8 shadow-xs">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-gray-100 dark:border-zinc-800">
+              <div className="flex items-start sm:items-center gap-4">
+                <img
+                  src="/app-icon.png"
+                  alt="TaskFlow App Icon"
+                  className="h-20 w-20 rounded-2xl shadow-md border border-gray-200 dark:border-zinc-800 object-cover shrink-0"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                      TaskFlow for Android
+                    </h2>
+                    <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      v1.0.0
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-zinc-300">
+                    Official standalone APK release. Install directly on any Android device without Google Play.
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-zinc-400">
+                    <span>File size: <strong className="text-gray-700 dark:text-zinc-200">73.5 MB</strong></span>
+                    <span>•</span>
+                    <span>Android 8.0+</span>
+                    <span>•</span>
+                    <span>Package: <code className="font-mono text-[11px]">com.wamisha.taskflow</code></span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <a
+                  href="/api/download/apk"
+                  download="TaskFlow.apk"
+                  className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition transform active:scale-98"
+                >
+                  <Icon name="download" className="h-5 w-5 text-white" />
+                  <span>Download APK (73.5 MB)</span>
+                </a>
+                <a
+                  href="https://expo.dev/accounts/devmisha5543/projects/taskflow-app/builds/a8eed132-227f-4b5c-8151-403cd1f9b206"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/80 hover:bg-gray-100 dark:hover:bg-zinc-700 px-4 py-3.5 text-xs font-semibold text-gray-700 dark:text-zinc-200 transition"
+                >
+                  <Icon name="cloud-upload" className="h-4 w-4 text-gray-400" />
+                  <span>Cloud Mirror</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Quick 3-Step Install Guide */}
+            <div className="mt-8">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white mb-4">
+                How to Install on Your Android Phone:
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/80 p-5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm mb-3">
+                    1
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">Download the File</h4>
+                  <p className="mt-1.5 text-xs text-gray-600 dark:text-zinc-300 leading-relaxed">
+                    Tap the green button above on your Android phone or copy this link into Chrome. The <span className="font-semibold text-gray-900 dark:text-white">taskflow.apk</span> will begin downloading.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/80 p-5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm mb-3">
+                    2
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">Allow Unknown Apps</h4>
+                  <p className="mt-1.5 text-xs text-gray-600 dark:text-zinc-300 leading-relaxed">
+                    When prompted &quot;File might be harmful&quot;, tap <span className="font-semibold text-gray-900 dark:text-white">Download anyway</span>. When opening, tap Settings &rarr; toggle on <span className="font-semibold text-gray-900 dark:text-white">&quot;Allow from this source&quot;</span>.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/80 p-5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm mb-3">
+                    3
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white">Install &amp; Enjoy</h4>
+                  <p className="mt-1.5 text-xs text-gray-600 dark:text-zinc-300 leading-relaxed">
+                    Tap <span className="font-semibold text-gray-900 dark:text-white">Install</span>. Once done, launch TaskFlow from your app drawer and log into your workspace!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Direct URL Box for Mobile Browsers */}
+            <div className="mt-6 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/30 p-4">
+              <div className="flex items-start gap-3">
+                <Icon name="link" className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                    Want to open on your phone right now?
+                  </h4>
+                  <p className="mt-0.5 text-xs text-blue-700 dark:text-blue-300">
+                    Open your phone&apos;s browser and visit:
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <code className="text-xs font-mono bg-white dark:bg-zinc-900 border border-blue-200 dark:border-blue-800 px-2.5 py-1 rounded text-blue-800 dark:text-blue-300 truncate">
+                      {typeof window !== "undefined" ? `${window.location.origin}/api/download/apk` : "/api/download/apk"}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(typeof window !== "undefined" ? `${window.location.origin}/api/download/apk` : "/api/download/apk", "apklink")}
+                      className="text-xs font-semibold px-2.5 py-1 rounded bg-blue-600 text-white hover:bg-blue-500 transition"
+                    >
+                      {copiedCommand === "apklink" ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 1. Expo Go Native App */}
       {activeTab === "expo" && (

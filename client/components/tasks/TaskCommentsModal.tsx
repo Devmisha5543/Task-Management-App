@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { addComment, deleteComment, getTaskComments } from "@/lib/commentApi";
 import type { Task, TaskComment } from "@/types/task";
+import { useSocket } from "@/context/SocketContext";
+import { useAuthStore } from "@/store/authStore";
 
 interface TaskCommentsModalProps {
   task: Task | null;
@@ -26,12 +28,51 @@ export default function TaskCommentsModal({
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const { socket, joinTask, leaveTask, sendTyping, typingUsers, taskViewers } = useSocket();
+  const currentUser = useAuthStore((state) => state.user);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (task && isOpen) {
       setError(null);
       fetchComments(task._id);
+      joinTask(task._id);
+
+      return () => {
+        leaveTask(task._id);
+      };
     }
-  }, [task, isOpen]);
+  }, [task, isOpen, joinTask, leaveTask]);
+
+  // Listen to real-time comment creation and deletion events
+  useEffect(() => {
+    if (!socket || !task?._id || !isOpen) return;
+
+    const handleCommentCreated = (data: { taskId: string; comment: TaskComment }) => {
+      if (data.taskId === task._id && data.comment) {
+        setComments((prev) => {
+          if (prev.some((c) => c._id === data.comment._id)) return prev;
+          return [...prev, data.comment];
+        });
+        if (onCommentChange) onCommentChange();
+      }
+    };
+
+    const handleCommentDeleted = (data: { taskId: string; commentId: string }) => {
+      if (data.taskId === task._id && data.commentId) {
+        setComments((prev) => prev.filter((c) => c._id !== data.commentId));
+        if (onCommentChange) onCommentChange();
+      }
+    };
+
+    socket.on("comment:created", handleCommentCreated);
+    socket.on("comment:deleted", handleCommentDeleted);
+
+    return () => {
+      socket.off("comment:created", handleCommentCreated);
+      socket.off("comment:deleted", handleCommentDeleted);
+    };
+  }, [socket, task?._id, isOpen, onCommentChange]);
 
   const fetchComments = async (taskId: string) => {
     setLoading(true);
@@ -49,6 +90,19 @@ export default function TaskCommentsModal({
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setNewComment(val);
+
+    if (task?._id) {
+      sendTyping(task._id, true);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        sendTyping(task._id, false);
+      }, 1500);
+    }
+  };
+
   if (!isOpen || !task) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,9 +112,17 @@ export default function TaskCommentsModal({
     setSubmitting(true);
     setError(null);
 
+    // Stop typing indicator immediately on submit
+    if (task?._id) {
+      sendTyping(task._id, false);
+    }
+
     try {
       const comment = await addComment(task._id, newComment.trim());
-      setComments((prev) => [...prev, comment]);
+      setComments((prev) => {
+        if (prev.some((c) => c._id === comment._id)) return prev;
+        return [...prev, comment];
+      });
       setNewComment("");
       if (onCommentChange) onCommentChange();
     } catch (err: unknown) {
@@ -107,15 +169,35 @@ export default function TaskCommentsModal({
     }
   };
 
+  // Filter out current user from typing and viewer lists
+  const activeTypers = (typingUsers[task._id] || []).filter(
+    (u) => u !== currentUser?.username
+  );
+  const otherViewers = (taskViewers[task._id] || []).filter(
+    (u) => u !== currentUser?.username
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-6 shadow-xl flex flex-col max-h-[85vh]">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-4">
           <div className="flex items-center gap-2">
-            <Icon name="comment" className="w-5 h-5 text-gray-700 dark:text-zinc-300" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+              <Icon name="comment" className="w-5 h-5" />
+            </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Discussion & Notes</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-zinc-100">
+                  Discussion &amp; Notes
+                </h2>
+                {otherViewers.length > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-300 border border-emerald-200/50">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    {otherViewers.join(", ")} viewing
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-500 dark:text-zinc-400 truncate max-w-xs">{task.title}</p>
             </div>
           </div>
@@ -148,7 +230,7 @@ export default function TaskCommentsModal({
           ) : (
             comments.map((comment) => {
               const username = comment.user?.username || comment.user?.email || "User";
-              const avatar = comment.user?.profileImage;
+              const avatar = comment.user?.profilePhoto || comment.user?.profileImage;
 
               return (
                 <div key={comment._id} className="flex items-start gap-3 group">
@@ -164,7 +246,7 @@ export default function TaskCommentsModal({
                     </div>
                   )}
 
-                  <div className="flex-1 bg-gray-50 dark:bg-zinc-800/70 rounded-2xl p-3 border border-gray-100 dark:border-zinc-750 text-sm">
+                  <div className="flex-1 bg-gray-50 dark:bg-zinc-800/70 rounded-2xl p-3 border border-gray-100 dark:border-zinc-800 text-sm">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <span className="font-semibold text-gray-900 dark:text-zinc-100 text-xs">
                         {username}
@@ -193,14 +275,28 @@ export default function TaskCommentsModal({
           )}
         </div>
 
+        {/* Real-time Typing Indicator */}
+        {activeTypers.length > 0 && (
+          <div className="flex items-center gap-1.5 pb-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+            <span className="flex gap-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce" />
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.2s]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.4s]" />
+            </span>
+            <span>
+              {activeTypers.join(", ")} {activeTypers.length > 1 ? "are" : "is"} typing...
+            </span>
+          </div>
+        )}
+
         {/* Comment Form */}
         <form onSubmit={handleSubmit} className="border-t border-gray-100 dark:border-zinc-800 pt-4">
           <div className="flex gap-2 items-center">
             <input
               type="text"
-              placeholder="Write a comment..."
+              placeholder="Write a comment... (real-time sync)"
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
+              onChange={handleInputChange}
               className="flex-1 rounded-xl border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 px-4 py-2.5 text-sm outline-none focus:border-black dark:focus:border-zinc-500 focus:ring-1 focus:ring-black dark:focus:ring-zinc-500 transition placeholder-gray-400 dark:placeholder-zinc-500"
               disabled={submitting}
             />
@@ -220,3 +316,4 @@ export default function TaskCommentsModal({
     </div>
   );
 }
+

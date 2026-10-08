@@ -20,6 +20,7 @@ import SettingsScreen from "./screens/SettingsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import Icon from "./components/Icon";
 import { theme } from "./components/ui/theme";
+import { initMobileSocket, disconnectMobileSocket } from "./lib/socket";
 
 type TabType = "dashboard" | "tasks" | "shared" | "calendar" | "settings";
 
@@ -37,6 +38,7 @@ export default function App() {
           const res = await mobileApiRequest("/auth/me");
           if (res.user) {
             setUser(res.user);
+            initMobileSocket();
           }
         }
       } catch (err) {
@@ -51,38 +53,25 @@ export default function App() {
   }, []);
 
   const handleLogout = async () => {
+    disconnectMobileSocket();
     await setAuthToken(null);
     setUser(null);
   };
 
-  if (checkingAuth) {
-    return (
-      <SafeAreaProvider>
-        <View style={styles.splash}>
-          <ActivityIndicator size="large" color={theme.colors.primary600} />
-          <StatusBar style="dark" />
-        </View>
-      </SafeAreaProvider>
-    );
-  }
-
-  if (!user) {
-    return (
-      <SafeAreaProvider>
-        <View style={styles.container}>
-          <StatusBar style="dark" />
-          <AuthScreen onLoginSuccess={(u) => setUser(u)} />
-        </View>
-      </SafeAreaProvider>
-    );
-  }
-
   return (
     <SafeAreaProvider>
-      <View style={styles.container}>
-        <StatusBar style="dark" />
-
-        {/* Screen Render */}
+      <StatusBar style="dark" />
+      {checkingAuth ? (
+        <View style={styles.splash}>
+          <ActivityIndicator size="large" color={theme.colors.primary600} />
+        </View>
+      ) : !user ? (
+        <View style={styles.container}>
+          <AuthScreen onLoginSuccess={(u) => setUser(u)} />
+        </View>
+      ) : (
+        <View style={styles.container}>
+          {/* Screen Render */}
         <View style={{ flex: 1 }}>
           {currentTab === "dashboard" && (
             <HomeScreen
@@ -248,6 +237,7 @@ export default function App() {
           />
         </Modal>
       </View>
+      )}
     </SafeAreaProvider>
   );
 }

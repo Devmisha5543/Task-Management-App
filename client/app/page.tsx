@@ -34,7 +34,15 @@ export default function Home() {
           <span className="text-xl font-bold tracking-tight">TaskFlow</span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <a
+            href="/api/download/apk"
+            download="TaskFlow.apk"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 transition"
+          >
+            <Icon name="download" className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Download APK</span>
+          </a>
           <Link
             href="/login"
             className="text-sm font-medium text-gray-300 transition hover:text-white"
@@ -65,7 +73,7 @@ export default function Home() {
           Streamline your workflow with intuitive Kanban boards, priority tracking, task sharing, and real-time synchronization across desktop and mobile devices.
         </p>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
+        <div className="mt-10 flex flex-wrap justify-center items-center gap-4">
           <Link
             href="/register"
             className="rounded-xl bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-600/40 transition hover:bg-blue-500"
@@ -78,6 +86,17 @@ export default function Home() {
           >
             Go to Dashboard
           </Link>
+          <a
+            href="/api/download/apk"
+            download="TaskFlow.apk"
+            className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-6 py-2.5 text-base font-semibold text-emerald-300 shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-500/20 hover:border-emerald-400 flex items-center gap-2.5"
+          >
+            <Icon name="smartphone" className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="text-left leading-tight">
+              <span className="block text-[10px] uppercase tracking-wider text-emerald-400/80 font-medium">Android App</span>
+              <span className="text-sm font-bold">Download APK</span>
+            </div>
+          </a>
         </div>
 
         {/* Quick Feature Grid */}

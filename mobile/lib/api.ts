@@ -2,12 +2,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
-const getBaseUrl = () => {
+const getDefaultBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
   }
 
-  let host = "192.168.1.6";
+  let host = "192.168.1.5";
 
   if (Platform.OS === "web") {
     host =
@@ -35,7 +35,50 @@ const getBaseUrl = () => {
   return `http://${host}:5001/api`;
 };
 
-export const API_URL = getBaseUrl();
+export const DEFAULT_API_URL = getDefaultBaseUrl();
+export const API_URL = DEFAULT_API_URL;
+
+let inMemoryCustomUrl: string | null = null;
+let customUrlLoaded = false;
+
+export const getEffectiveApiUrl = async (): Promise<string> => {
+  if (!customUrlLoaded) {
+    try {
+      const saved = await AsyncStorage.getItem("custom_api_url");
+      if (saved) {
+        inMemoryCustomUrl = saved.replace(/\/$/, "");
+      }
+    } catch {
+      // ignore
+    } finally {
+      customUrlLoaded = true;
+    }
+  }
+  return inMemoryCustomUrl || DEFAULT_API_URL;
+};
+
+export const setCustomApiUrl = async (url: string | null): Promise<void> => {
+  if (url && url.trim()) {
+    let clean = url.trim().replace(/\/$/, "");
+    if (!clean.endsWith("/api")) {
+      clean = `${clean}/api`;
+    }
+    inMemoryCustomUrl = clean;
+    try {
+      await AsyncStorage.setItem("custom_api_url", clean);
+    } catch {
+      // ignore
+    }
+  } else {
+    inMemoryCustomUrl = null;
+    try {
+      await AsyncStorage.removeItem("custom_api_url");
+    } catch {
+      // ignore
+    }
+  }
+  customUrlLoaded = true;
+};
 
 let inMemoryToken: string | null = null;
 
@@ -68,6 +111,7 @@ export async function mobileApiRequest(
   options: RequestInit = {}
 ) {
   const token = await getAuthToken();
+  const baseUrl = await getEffectiveApiUrl();
 
   const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
 
@@ -82,14 +126,14 @@ export async function mobileApiRequest(
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}${endpoint}`, {
+    response = await fetch(`${baseUrl}${endpoint}`, {
       ...options,
       headers,
     });
   } catch (netErr: any) {
-    console.error(`Network fetch failed for ${API_URL}${endpoint}:`, netErr);
+    console.error(`Network fetch failed for ${baseUrl}${endpoint}:`, netErr);
     throw new Error(
-      `Cannot connect to backend (${API_URL}). Ensure server is running and accessible on your Wi-Fi network.`
+      `Cannot connect to backend (${baseUrl}). Ensure server is running and accessible on your Wi-Fi network.`
     );
   }
 
@@ -101,7 +145,7 @@ export async function mobileApiRequest(
   } catch (e) {
     console.warn("Non-JSON API response received:", textData);
     throw new Error(
-      `Server error (${response.status}). Ensure backend API is running at ${API_URL}`
+      `Server error (${response.status}). Ensure backend API is running at ${baseUrl}`
     );
   }
 

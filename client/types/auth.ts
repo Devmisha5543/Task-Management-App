@@ -15,3 +15,4 @@ export interface AuthResponse {
 }
 
 export type LoginResponse = AuthResponse;
+export type RegisterResponse = AuthResponse;

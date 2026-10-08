@@ -74,7 +74,7 @@ export default function ShareTaskModal({
       await addTaskMember(task._id, email.trim(), role);
       setEmail("");
       await loadMembers();
-      onMembersUpdated();
+      onMembersUpdated?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to add member");
     } finally {
@@ -91,7 +91,7 @@ export default function ShareTaskModal({
           (typeof m.user === "string" ? m.user : m.user._id) !== userId
         )
       );
-      onMembersUpdated();
+      onMembersUpdated?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to remove member");
     }
@@ -191,10 +191,10 @@ export default function ShareTaskModal({
               }
               style={styles.memberList}
               renderItem={({ item }) => {
-                const isObj = typeof item.user !== "string";
-                const username = isObj ? item.user.username : "User";
-                const userEmail = isObj ? item.user.email : item.user;
-                const userId = isObj ? item.user._id : item.user;
+                const userObj = typeof item.user === "object" && item.user !== null ? item.user : null;
+                const username = userObj ? userObj.username : "User";
+                const userEmail = userObj ? userObj.email : (typeof item.user === "string" ? item.user : "");
+                const userId = userObj ? userObj._id : (typeof item.user === "string" ? item.user : "");
 
                 return (
                   <View style={styles.memberItem}>

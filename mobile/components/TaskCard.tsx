@@ -5,6 +5,7 @@ import type { Task, TaskDependency } from "../types/task";
 
 interface TaskCardProps {
   task: Task;
+  currentUserId?: string;
   onStatusChange: (
     task: Task,
     newStatus: "todo" | "in-progress" | "done"

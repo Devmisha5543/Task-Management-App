@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/authStore";
 import Icon from "@/components/ui/Icon";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { useSocket } from "@/context/SocketContext";
 
 export default function DashboardLayout({
   children,
@@ -20,6 +21,7 @@ export default function DashboardLayout({
 }) {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const { isConnected } = useSocket();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -218,6 +220,28 @@ export default function DashboardLayout({
                   <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">
                     Workspace
                   </h2>
+
+                  {/* Real-time WebSockets Sync Indicator */}
+                  {isConnected ? (
+                    <div
+                      className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs"
+                      title="Real-time WebSocket Live Sync is active"
+                    >
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      </span>
+                      <span>Live Sync</span>
+                    </div>
+                  ) : (
+                    <div
+                      className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500 dark:bg-zinc-800 dark:text-zinc-400 border border-gray-200/60 dark:border-zinc-700/60"
+                      title="Connecting to WebSocket server..."
+                    >
+                      <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                      <span>Syncing...</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Action Icons: Dark Mode Toggle, Notification Bell, User Profile, Logout */}

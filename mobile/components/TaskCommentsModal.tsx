@@ -18,6 +18,7 @@ import type { Task, TaskComment } from "../types/task";
 
 interface TaskCommentsModalProps {
   task: Task | null;
+  currentUserId?: string;
   visible?: boolean;
   isOpen?: boolean;
   onClose: () => void;
@@ -337,7 +338,6 @@ const styles = StyleSheet.create({
     gap: 8,
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
-    pt: 12,
     paddingTop: 10,
   },
   input: {

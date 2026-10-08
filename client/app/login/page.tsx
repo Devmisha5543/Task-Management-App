@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -9,7 +9,7 @@ import { useAuthStore } from "@/store/authStore";
 import type { LoginResponse } from "@/types/auth";
 import Icon from "@/components/ui/Icon";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const loggedOut = searchParams.get("logout") === "success";
@@ -501,5 +501,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50/50 dark:bg-zinc-950 text-xs text-gray-500">Loading TaskFlow...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

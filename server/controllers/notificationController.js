@@ -1,5 +1,6 @@
 const Notification = require("../models/Notification");
 const Task = require("../models/Task");
+const { emitToUser } = require("../socket");
 
 // Dynamic deadline checks: generate approaching / overdue alerts if not recently created
 const checkTaskDeadlinesForUser = async (userId) => {
@@ -32,13 +33,14 @@ const checkTaskDeadlinesForUser = async (userId) => {
             month: "short",
             day: "numeric",
           });
-          await Notification.create({
+          const createdNotif = await Notification.create({
             recipient: userId,
             task: task._id,
             type: "deadline_overdue",
             title: `Task Overdue: ${task.title}`,
             message: `"${task.title}" was due on ${formattedDate}. Please review and update its status.`,
           });
+          emitToUser(userId.toString(), "notification:new", createdNotif);
         }
       } else if (due <= oneDayFromNow) {
         // Approaching deadline alert
@@ -54,13 +56,14 @@ const checkTaskDeadlinesForUser = async (userId) => {
             month: "short",
             day: "numeric",
           });
-          await Notification.create({
+          const createdNotif = await Notification.create({
             recipient: userId,
             task: task._id,
             type: "deadline_approaching",
             title: `Deadline Approaching: ${task.title}`,
             message: `"${task.title}" is due soon (${formattedDate}). Don't forget to wrap it up!`,
           });
+          emitToUser(userId.toString(), "notification:new", createdNotif);
         }
       }
     }
@@ -107,6 +110,8 @@ const markAsRead = async (req, res) => {
       return res.status(404).json({ message: "Notification not found" });
     }
 
+    emitToUser(req.userId.toString(), "notification:read", { notificationId: req.params.id });
+
     res.status(200).json({ message: "Marked as read", notification });
   } catch (error) {
     console.error("Mark notification read error:", error);
@@ -120,6 +125,8 @@ const markAllAsRead = async (req, res) => {
       { recipient: req.userId, read: false },
       { read: true }
     );
+
+    emitToUser(req.userId.toString(), "notification:all_read", {});
 
     res.status(200).json({ message: "All notifications marked as read" });
   } catch (error) {
@@ -139,6 +146,8 @@ const deleteNotification = async (req, res) => {
       return res.status(404).json({ message: "Notification not found" });
     }
 
+    emitToUser(req.userId.toString(), "notification:deleted", { notificationId: req.params.id });
+
     res.status(200).json({ message: "Notification deleted successfully" });
   } catch (error) {
     console.error("Delete notification error:", error);
@@ -149,6 +158,9 @@ const deleteNotification = async (req, res) => {
 const clearAllNotifications = async (req, res) => {
   try {
     await Notification.deleteMany({ recipient: req.userId });
+
+    emitToUser(req.userId.toString(), "notification:all_cleared", {});
+
     res.status(200).json({ message: "All notifications cleared" });
   } catch (error) {
     console.error("Clear all notifications error:", error);
@@ -163,3 +175,4 @@ module.exports = {
   deleteNotification,
   clearAllNotifications,
 };
+

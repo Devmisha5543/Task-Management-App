@@ -2,6 +2,7 @@ const Task = require("../models/Task");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const logActivity = require("../utils/activityLogger");
+const { emitToUser, emitToTask, emitGlobal } = require("../socket");
 
 const {
   createTaskSchema,
@@ -34,6 +35,9 @@ const createTask = async (req, res) => {
       action: "created",
       details: { title: task.title, status: task.status }
     });
+
+    // Broadcast real-time task creation
+    emitGlobal("task:created", { task });
 
     res.status(201).json({
       message: "Task created successfully",
@@ -98,6 +102,8 @@ const updateTask = async (req, res) => {
       });
     }
 
+    const oldStatus = existingTask.status;
+
     // Validate dependencies if trying to mark task as done
     if (validatedData.status === "done" && existingTask.dependencies && existingTask.dependencies.length > 0) {
       const dependentTasks = await Task.find({
@@ -140,6 +146,10 @@ const updateTask = async (req, res) => {
         details: { updatedFields: Object.keys(validatedData) }
       });
     }
+
+    // Broadcast real-time task update to all connected clients and the specific task room
+    emitGlobal("task:updated", { task });
+    emitToTask(task._id.toString(), "task:updated", { task });
 
     // If a recurring task is completed, automatically schedule the next occurrence
     if (
@@ -190,6 +200,13 @@ const updateTask = async (req, res) => {
           title: `Recurring Task Scheduled: ${nextTask.title}`,
           message: `A new cycle for "${nextTask.title}" has been created for ${nextDueDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })}.`
         });
+
+        emitGlobal("task:created", { task: nextTask });
+        emitToUser(req.userId.toString(), "notification:new", {
+          type: "recurrence_spawned",
+          title: `Recurring Task Scheduled: ${nextTask.title}`,
+          message: `A new cycle for "${nextTask.title}" has been created.`
+        });
       } catch (recErr) {
         console.error("Failed to spawn recurring task cycle:", recErr);
       }
@@ -227,6 +244,10 @@ const deleteTask = async (req, res) => {
         message: "Task not found"
       });
     }
+
+    // Broadcast deletion in real time
+    emitGlobal("task:deleted", { taskId: req.params.id });
+    emitToTask(req.params.id, "task:deleted", { taskId: req.params.id });
 
     res.status(200).json({
       message: "Task deleted successfully"
@@ -309,9 +330,19 @@ const addTaskMember = async (req, res) => {
         title: `Task Shared with You: ${task.title}`,
         message: `You were added as a ${role} to "${task.title}".`
       });
+
+      emitToUser(user._id.toString(), "notification:new", {
+        type: "task_shared",
+        title: `Task Shared with You: ${task.title}`,
+        message: `You were added as a ${role} to "${task.title}".`
+      });
+      emitToUser(user._id.toString(), "task:created", { task });
     } catch (notifErr) {
       console.error("Failed to send task share notification:", notifErr);
     }
+
+    emitGlobal("task:updated", { task });
+    emitToTask(task._id.toString(), "task:updated", { task });
 
     res.status(200).json({
       message: "User added to task successfully",
@@ -400,6 +431,10 @@ const removeTaskMember = async (req, res) => {
       details: { removedUserId }
     });
 
+    emitToUser(req.params.userId, "task:deleted", { taskId: task._id });
+    emitGlobal("task:updated", { task });
+    emitToTask(task._id.toString(), "task:updated", { task });
+
     res.status(200).json({
       message: "User removed from task successfully"
     });
@@ -448,6 +483,9 @@ const addSubtask = async (req, res) => {
       action: "added_subtask",
       details: { title: createdSubtask.title }
     });
+
+    emitGlobal("task:updated", { task });
+    emitToTask(task._id.toString(), "task:updated", { task });
 
     res.status(201).json({
       message: "Subtask added successfully",
@@ -517,6 +555,9 @@ const updateSubtask = async (req, res) => {
       });
     }
 
+    emitGlobal("task:updated", { task });
+    emitToTask(task._id.toString(), "task:updated", { task });
+
     res.status(200).json({
       message: "Subtask updated successfully",
       task,
@@ -571,6 +612,9 @@ const deleteSubtask = async (req, res) => {
       action: "deleted_subtask",
       details: { title: subtaskTitle }
     });
+
+    emitGlobal("task:updated", { task });
+    emitToTask(task._id.toString(), "task:updated", { task });
 
     res.status(200).json({
       message: "Subtask deleted successfully",

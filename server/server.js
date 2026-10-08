@@ -1,3 +1,4 @@
+const http = require("http");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -7,10 +8,15 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const { initSocket } = require("./socket");
 
 connectDB();
 
 const app = express();
+const httpServer = http.createServer(app);
+
+// Initialize real-time Socket.IO engine
+initSocket(httpServer);
 
 const PORT = process.env.PORT || 5001;
 app.use(cors());
@@ -25,7 +31,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.json({ message: "Task Management API is running" });
+  res.json({ message: "Task Management API with Real-time WebSockets is running" });
 });
 
 const os = require("os");
@@ -42,20 +48,20 @@ const getNetworkIp = () => {
   return "localhost";
 };
 
-const server = app.listen(PORT, "0.0.0.0", () => {
+httpServer.listen(PORT, "0.0.0.0", () => {
   const networkIp = getNetworkIp();
-  console.log(`Server running on:`);
+  console.log(`Server running with WebSockets on:`);
   console.log(`  - Local:   http://localhost:${PORT}`);
   console.log(`  - Network: http://${networkIp}:${PORT} (use this for mobile Expo)`);
 });
 
-server.on("error", (err) => {
+httpServer.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
     console.error(`Port ${PORT} is in use. Trying port ${Number(PORT) + 1}...`);
-    app.listen(Number(PORT) + 1, "0.0.0.0", () => {
+    httpServer.listen(Number(PORT) + 1, "0.0.0.0", () => {
       console.log(`Server running on port ${Number(PORT) + 1}`);
     });
   } else {
     console.error("Server error:", err);
   }
-});
+});

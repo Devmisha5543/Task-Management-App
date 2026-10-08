@@ -19,7 +19,11 @@ export interface ActivityLog {
     | "added_attachment"
     | "deleted_attachment"
     | "added_comment"
-    | "deleted_comment";
+    | "deleted_comment"
+    | "added_subtask"
+    | "completed_subtask"
+    | "uncompleted_subtask"
+    | "deleted_subtask";
   details?: Record<string, unknown>;
   createdAt: string;
 }

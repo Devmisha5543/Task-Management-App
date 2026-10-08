@@ -16,7 +16,7 @@ export async function createTask(taskData: CreateTaskData): Promise<Task> {
 
 export async function updateTask(
   id: string,
-  taskData: CreateTaskData
+  taskData: Partial<CreateTaskData>
 ): Promise<Task> {
   const data = await mobileApiRequest(`/tasks/${id}`, {
     method: "PUT",
