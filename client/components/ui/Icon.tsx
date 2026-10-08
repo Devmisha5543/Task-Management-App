@@ -42,7 +42,8 @@ export type WebIconName =
   | "monitor"
   | "sidebar"
   | "chevron-down"
-  | "smartphone";
+  | "smartphone"
+  | "mail";
 
 interface WebIconProps {
   name: WebIconName;
@@ -192,6 +193,15 @@ export default function Icon({ name, className = "w-5 h-5", size }: WebIconProps
         return (
           <path
             d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        );
+      case "mail":
+        return (
+          <path
+            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"

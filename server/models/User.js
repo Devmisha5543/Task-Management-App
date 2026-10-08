@@ -39,6 +39,27 @@ const userSchema = new mongoose.Schema(
     profilePhotoPublicId: {
       type: String,
       default: null
+    },
+
+    // Mobile Device Push Notification Tokens (Expo)
+    pushTokens: {
+      type: [String],
+      default: []
+    },
+
+    // Automated Email Preferences
+    emailPreferences: {
+      deadlineAlerts: { type: Boolean, default: true },
+      taskAssignments: { type: Boolean, default: true },
+      comments: { type: Boolean, default: true },
+      weeklyDigest: { type: Boolean, default: true }
+    },
+
+    // Mobile Push Preferences
+    pushPreferences: {
+      deadlineAlerts: { type: Boolean, default: true },
+      taskAssignments: { type: Boolean, default: true },
+      comments: { type: Boolean, default: true }
     }
   },
   {

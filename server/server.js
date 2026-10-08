@@ -9,8 +9,12 @@ const authRoutes = require("./routes/authRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const { initSocket } = require("./socket");
+const { initCronJobs } = require("./utils/cronJobs");
 
 connectDB();
+
+// Initialize automated scheduled cron jobs (for email & push notifications)
+initCronJobs();
 
 const app = express();
 const httpServer = http.createServer(app);

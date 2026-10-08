@@ -5,7 +5,13 @@ const {
   getMe,
   updateProfile,
   uploadProfilePhoto,
-  deleteProfilePhoto
+  deleteProfilePhoto,
+  savePushToken,
+  removePushToken,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  sendTestEmail,
+  sendTestPush,
 } = require("../controllers/authController");
 
 const protect = require("../middleware/authMiddleware");
@@ -26,5 +32,17 @@ router.put(
   uploadProfilePhoto
 );
 router.delete("/profile-photo", protect, deleteProfilePhoto);
+
+// Push Tokens
+router.post("/push-token", protect, savePushToken);
+router.delete("/push-token", protect, removePushToken);
+
+// Notification Preferences
+router.get("/notification-preferences", protect, getNotificationPreferences);
+router.put("/notification-preferences", protect, updateNotificationPreferences);
+
+// Test Notification Triggers
+router.post("/test-email", protect, sendTestEmail);
+router.post("/test-push", protect, sendTestPush);
 
 module.exports = router;
