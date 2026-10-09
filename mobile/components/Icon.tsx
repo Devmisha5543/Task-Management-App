@@ -5,6 +5,8 @@ export type IconName =
   | "search-outline"
   | "close-circle"
   | "close-outline"
+  | "close"
+  | "settings-outline"
   | "list-outline"
   | "grid-outline"
   | "chevron-down-outline"
@@ -43,6 +45,8 @@ const GLYPHS: Record<IconName, string> = {
   "search-outline": "🔍",
   "close-circle": "✕",
   "close-outline": "✕",
+  "close": "✕",
+  "settings-outline": "⚙",
   "list-outline": "☰",
   "grid-outline": "⊞",
   "chevron-down-outline": "▾",
