@@ -2,9 +2,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
+export const RENDER_API_URL = "https://task-management-app-pqx5.onrender.com/api";
+
 const getDefaultBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+
+  // If running as standalone APK or physical build without local bundler, default to Render
+  if (!__DEV__) {
+    return RENDER_API_URL;
   }
 
   let host = "10.195.131.248";

@@ -1,5 +1,9 @@
 const getBaseApiUrl = (): string => {
-  const envUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  const envUrl =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (typeof window !== "undefined" && window.location.hostname !== "localhost"
+      ? "https://task-management-app-pqx5.onrender.com/api"
+      : "http://localhost:5001/api");
   const trimmed = envUrl.trim().replace(/\/+$/, "");
   if (trimmed.endsWith("/api")) {
     return trimmed;
