@@ -1,5 +1,13 @@
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+const getBaseApiUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  const trimmed = envUrl.trim().replace(/\/+$/, "");
+  if (trimmed.endsWith("/api")) {
+    return trimmed;
+  }
+  return `${trimmed}/api`;
+};
+
+const API_URL = getBaseApiUrl();
 
 export async function apiRequest(
   endpoint: string,
@@ -42,11 +50,11 @@ export async function apiRequest(
   }
 
   if (!response.ok) {
-    const errorMsg =
+    let errorMsg =
       (typeof data === "object" && data !== null && data.message) ||
-      (typeof data === "string" && data.length > 0 && data.length < 200
-        ? data
-        : `Request failed with status ${response.status}`);
+      (typeof data === "string" && !data.includes("<!DOCTYPE") && !data.includes("<html") && data.trim().length > 0 && data.length < 200
+        ? data.trim()
+        : `Server responded with error ${response.status} (${response.statusText || "Endpoint not found"})`);
     throw new Error(errorMsg);
   }
 
